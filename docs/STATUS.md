@@ -40,7 +40,7 @@ schema + placeholder vuoti, `~/.claude/settings.json` viva intatta dopo il dry-r
 - [x] ~~Confermare i sottocomandi CLI esatti~~ — verificato con `claude plugin --help` (2026-06-29): `claude plugin marketplace add <source>` e `claude plugin install <plugin>@<marketplace>` sono corretti così come in `lib/run-component.sh`.
 - [ ] Caveat Windows hook SessionStart: la variante `.ps1` esiste ma il rewrite del comando hook per Windows è documentato, non automatizzato (fallback WSL nel README).
 - [x] ~~Nessun git remote~~ — repo pubblica creata e pushata (2026-06-29): https://github.com/sonosaturn/overclaude
-- [ ] **Layer 2 personale** (`overclaude-personal`): non ancora creato (dati `~/brain` reali per la ri-configurazione su nuovo dispositivo).
+- [x] ~~Layer 2 personale (`overclaude-personal`)~~ — creato (2026-06-29): `~/brain` reale pushato su repo GitHub **privata** `sonosaturn/overclaude-personal`. Round-trip verificato (clone → `install.sh --personal=<clone>` → `WOULD OVERLAY`). Nota: la auto-memoria sotto `~/.claude/.../memory/` NON è inclusa (vive fuori da `~/brain`; `--personal` sovrappone solo il vault).
 
 ## Note operative
 - Key context7 ruotata il 2026-06-29 (la vecchia era stata esposta in chat; rigenerata).
