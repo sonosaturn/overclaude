@@ -1,0 +1,11 @@
+{
+  "name": "overclaude",
+  "owner": { "name": "xsaturn" },
+  "plugins": [
+    {
+      "name": "overclaude",
+      "source": "./plugins/overclaude",
+      "description": "Brain second-brain skills + conversation-log + SessionStart hook"
+    }
+  ]
+}
