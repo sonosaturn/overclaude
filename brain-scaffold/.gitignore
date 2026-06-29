@@ -1,0 +1,14 @@
+# Output del grafo (rigenerabile)
+graphify-out/
+
+# Cache Obsidian volatile
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache/
+
+# Marker della sessione conversazioni (volatile)
+conversations/.current-session
+
+# Sistema
+.DS_Store
+.trash/
