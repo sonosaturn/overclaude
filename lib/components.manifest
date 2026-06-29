@@ -1,0 +1,15 @@
+# type|name|arg   — single source of truth for third-party components
+plugin|superpowers|obra/superpowers
+plugin|ponytail|DietrichGebert/ponytail
+npm-global|gitnexus|gitnexus
+uv-tool|markitdown|markitdown[all]
+uv-tool|graphify|graphify[gemini]
+mcp|context7|npx -y @upstash/context7-mcp
+mcp|playwright|npx @playwright/mcp@latest
+skills-cli|find-skills|vercel-labs/skills
+skills-cli|skill-creator|anthropics/skills
+skills-cli|handoff|mattpocock/skills
+skills-cli|grill-me|mattpocock/skills
+cmd|caveman|curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash
+cmd|impeccable|npx -y impeccable install
+cmd|gitnexus-setup|gitnexus setup
