@@ -37,9 +37,9 @@ schema + placeholder vuoti, `~/.claude/settings.json` viva intatta dopo il dry-r
 
 ## Follow-up aperti
 - [ ] ⚠️ **`install.ps1` / `verify.ps1`: sintassi NON validata** (manca `pwsh` sulla macchina di build). Testare su Windows reale.
-- [ ] Confermare i sottocomandi CLI esatti `claude plugin marketplace add` / `claude plugin install` con `claude plugin --help` (il fix è isolato in `lib/run-component.sh`).
+- [x] ~~Confermare i sottocomandi CLI esatti~~ — verificato con `claude plugin --help` (2026-06-29): `claude plugin marketplace add <source>` e `claude plugin install <plugin>@<marketplace>` sono corretti così come in `lib/run-component.sh`.
 - [ ] Caveat Windows hook SessionStart: la variante `.ps1` esiste ma il rewrite del comando hook per Windows è documentato, non automatizzato (fallback WSL nel README).
-- [ ] Nessun **git remote**: creare repo GitHub `overclaude` e push.
+- [x] ~~Nessun git remote~~ — repo pubblica creata e pushata (2026-06-29): https://github.com/sonosaturn/overclaude
 - [ ] **Layer 2 personale** (`overclaude-personal`): non ancora creato (dati `~/brain` reali per la ri-configurazione su nuovo dispositivo).
 
 ## Note operative
