@@ -9,4 +9,8 @@ echo "$out" | grep -q 'claude mcp add playwright' || fail "playwright not orches
 echo "$out" | grep -q 'gitnexus setup' || fail "gitnexus setup not orchestrated"
 # dry-run must not touch the real ~/.claude
 echo "$out" | grep -qi 'DRY-RUN' || fail "dry-run banner missing"
+# 6b: auto-memory symlink restore (layer-2)
+pout="$(sh "$root/install.sh" --dry-run --personal=/tmp/nope 2>&1)" || fail "personal dry-run nonzero"
+echo "$pout" | grep -q 'WOULD OVERLAY personal' || fail "personal overlay not announced"
+echo "$pout" | grep -q 'WOULD LINK .*/memory -> ~/brain/claude-memory' || fail "memory symlink restore not announced"
 echo "PASS test_install_dryrun"

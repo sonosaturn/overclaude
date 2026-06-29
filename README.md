@@ -70,6 +70,11 @@ tienili in una repo/backup privati e sovrapponili:
 sh install.sh --personal=/percorso/al/tuo/backup-brain
 ```
 
+Il backup include anche la **auto-memoria** di Claude Code: la posizione live
+(`~/.claude/projects/<home>/memory/`) è un symlink a `~/brain/claude-memory/`, così
+la memoria vive dentro il vault, è versionata col suo git e si ripristina insieme ad
+esso. L'installer ricrea il symlink dopo l'overlay (su Windows: usa WSL).
+
 ## Caveat Windows
 
 L'hook SessionStart `new-session` esiste in due varianti (`new-session.sh` e

@@ -59,6 +59,14 @@ if [ -n "$PERSONAL" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD OVERLAY personal from $PERSONAL"; else cp -r "$PERSONAL/." "$HOME/brain/"; fi
 fi
 
+# 6b. restore auto-memory: live dir is a symlink into the vault (single source of truth)
+if [ -d "$HOME/brain/claude-memory" ] || [ "$DRY_RUN" = 1 ]; then
+  proj="$(printf '%s' "$HOME" | sed 's#/#-#g')"        # /home/x -> -home-x (Claude Code project key)
+  memlink="$HOME/.claude/projects/$proj/memory"
+  if [ "$DRY_RUN" = 1 ]; then echo "WOULD LINK $memlink -> ~/brain/claude-memory"
+  else mkdir -p "$(dirname "$memlink")"; rm -rf "$memlink"; ln -s "$HOME/brain/claude-memory" "$memlink"; fi
+fi
+
 # 7. secrets
 if [ ! -f "$HERE/.env" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD CREATE .env from example"; else cp "$HERE/.env.example" "$HERE/.env"; fi
