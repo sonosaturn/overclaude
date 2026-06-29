@@ -85,3 +85,7 @@ sh tests/run.sh
 
 Test in shell puro (nessun framework). La validazione di sintassi dei `.ps1` richiede `pwsh`
 (altrimenti viene saltata con `SKIP`).
+
+## Stato del progetto
+
+Vedi [`docs/STATUS.md`](docs/STATUS.md) — task completati, follow-up aperti, note operative.
