@@ -40,3 +40,47 @@ cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione chiara>"
 
 Vedi `~/.claude/rules/context7.md`: usa il MCP Context7 per documentazione aggiornata di
 librerie, framework, SDK, API e CLI quando l'utente fa domande a riguardo.
+
+## GitNexus — code intelligence automatica (ogni repo indicizzato)
+
+GitNexus mantiene un **grafo di conoscenza** del codice (simboli, relazioni, flussi di
+esecuzione) interrogabile via tool MCP `mcp__gitnexus__*`. **Si applica a QUALSIASI repo
+indicizzato** — riconoscibile dalla cartella `.gitnexus/` nella root e/o dalla presenza dei
+tool `mcp__gitnexus__*`. Se il repo non è indicizzato, questa sezione non vale (e prima di
+usare i tool va fatto `npx gitnexus analyze`).
+
+**Già automatico via hook** (`~/.claude/hooks/gitnexus/gitnexus-hook.cjs`, installato in
+`settings.json` da `gitnexus setup`): `PreToolUse` su Grep/Glob/Bash **arricchisce** col
+contesto del grafo; `PostToolUse` su Bash **controlla la freschezza** dell'indice (avvisa dopo
+`git commit`/`merge`). L'hook **non** rilancia analyze da solo → **quando avvisa che l'indice è
+stale, rilancia tu** `node .gitnexus/run.cjs analyze` dalla root del repo (fallback
+`npx gitnexus analyze`). Dopo un reindex i conteggi simboli/edge cambiano: è normale.
+
+**Riflesso di base:** per capire/navigare/modificare codice, **preferisci il grafo a
+grep/read**. Il grep trova stringhe; GitNexus capisce chiamanti, dipendenze e flussi.
+
+| Quando… | Usa |
+|---------|-----|
+| "Come funziona X?" / esplori codice ignoto | `query({search_query:"concetto"})` (flussi raggruppati, ranked) invece di grep |
+| Serve tutto il contesto di un simbolo (chiamanti, callee, flussi) | `context({name:"simbolo"})` |
+| **Prima di modificare** una funzione/classe/metodo | `impact({target:"simbolo", direction:"upstream"})` → riporta blast radius e rischio |
+| **Prima di committare** | `detect_changes()` (o `{scope:"compare", base_ref:"<branch-default>"}`) per verificare lo scope toccato |
+| Rinominare un simbolo | `rename(...)` (capisce il call-graph) — **mai** find-and-replace |
+| Tracciare un bug / "perché X fallisce?" | `trace(...)` |
+| Security review (source→sink, taint) | `explain({target:"file/simbolo"})` (richiede indice con `analyze --pdg`) |
+| Controllo/dato-dipendenze dentro una funzione | `pdg_query(...)` |
+| Query libera sul grafo | `cypher(...)` · Mappa rotte HTTP | `route_map(...)` · Repo indicizzati | `list_repos()` |
+
+**Regole MUST / NEVER** (per i repo di codice indicizzati):
+- **MUST** lanciare `impact` prima di editare un simbolo e **avvisare l'utente** se il rischio è
+  HIGH/CRITICAL prima di procedere.
+- **MUST** lanciare `detect_changes()` prima di un commit per confermare che le modifiche
+  toccano solo lo scope atteso.
+- **NEVER** rinominare con find-and-replace → usa `rename`. **NEVER** ignorare un warning
+  HIGH/CRITICAL di `impact`.
+
+**Risorse MCP:** `gitnexus://repo/{nome}/context` · `/clusters` · `/processes` · `/process/{nome}`.
+
+**Per il resto** (elenco completo dei tool, schema del grafo, workflow) usa le skill
+`gitnexus-guide`, `gitnexus-exploring`, `gitnexus-debugging`, `gitnexus-impact-analysis`,
+`gitnexus-refactoring`, `gitnexus-pr-review`, `gitnexus-cli`.
