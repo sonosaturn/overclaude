@@ -74,6 +74,13 @@ contesto del grafo; `PostToolUse` su Bash **controlla la freschezza** dell'indic
 stale, rilancia tu** `node .gitnexus/run.cjs analyze` dalla root del repo (fallback
 `npx gitnexus analyze`). Dopo un reindex i conteggi simboli/edge cambiano: è normale.
 
+**Auto-reindex a ogni commit (repo nuovi):** l'installer registra un git `post-commit`
+(`~/.local/bin/gitnexus-autoreindex.sh`) via `init.templateDir`, quindi **ogni repo creato dopo
+l'install** (`git init`/`clone`) si autoimpianta GitNexus e si reindexa da solo — in background,
+detached, senza bloccare git — a ogni commit, **inclusi i commit automatici** fatti seguendo le
+regole di questo CLAUDE.md. Primo commit = analyze completo, poi incrementale. Repo preesistenti
+non sono coperti: reindexali a mano una volta con `gitnexus analyze <path>`.
+
 **Riflesso di base:** per capire/navigare/modificare codice, **preferisci il grafo a
 grep/read**. Il grep trova stringhe; GitNexus capisce chiamanti, dipendenze e flussi.
 

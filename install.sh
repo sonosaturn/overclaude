@@ -72,4 +72,19 @@ if [ ! -f "$HERE/.env" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD CREATE .env from example"; else cp "$HERE/.env.example" "$HERE/.env"; fi
 fi
 
+# 8. gitnexus auto-reindex on commit: new repos auto-implant the post-commit hook via
+#    git init.templateDir. First commit -> full analyze, later commits -> incremental.
+bindir="$HOME/.local/bin"
+tpl="$(git config --global --get init.templateDir 2>/dev/null || true)"   # respect an existing templateDir
+[ -n "$tpl" ] || tpl="$HOME/.config/git/template"
+if [ "$DRY_RUN" = 1 ]; then
+  echo "WOULD INSTALL $bindir/gitnexus-autoreindex.sh"
+  echo "WOULD INSTALL $tpl/hooks/post-commit and set git init.templateDir=$tpl"
+else
+  mkdir -p "$bindir" "$tpl/hooks"
+  cp "$HERE/lib/gitnexus-autoreindex.sh" "$bindir/gitnexus-autoreindex.sh"; chmod +x "$bindir/gitnexus-autoreindex.sh"
+  cp "$HERE/git-template/hooks/post-commit" "$tpl/hooks/post-commit"; chmod +x "$tpl/hooks/post-commit"
+  git config --global init.templateDir "$tpl"
+fi
+
 log "done. Run 'sh install.sh --check' to verify."

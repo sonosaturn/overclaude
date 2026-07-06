@@ -48,7 +48,7 @@ Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sinte
 | Componente | Ruolo |
 |---|---|
 | superpowers, ponytail | plugin di processo (brainstorm, TDD, debugging, lazy-mode) |
-| gitnexus | code-intelligence (grafo, impact analysis) + 9 skill + hook |
+| gitnexus | code-intelligence (grafo, impact analysis) + 9 skill + hook + auto-reindex a ogni commit sui repo nuovi (git `init.templateDir`) |
 | context7 (MCP) | documentazione aggiornata di librerie/SDK |
 | playwright (MCP) | automazione browser reale (test E2E, screenshot) |
 | caveman, grill-me | prosa terse · interrogatorio adversariale dei piani |

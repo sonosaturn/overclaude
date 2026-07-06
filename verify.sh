@@ -5,5 +5,8 @@ for b in node uv gitnexus markitdown graphify; do ck "tool $b in PATH" "command 
 ck "settings.json valid" "jq -e . \"$HOME/.claude/settings.json\""
 ck "overclaude plugin enabled" "jq -e '.enabledPlugins[\"overclaude@overclaude\"]==true' \"$HOME/.claude/settings.json\""
 ck "~/brain exists" "[ -d \"$HOME/brain\" ]"
+ck "gitnexus autoreindex script" "[ -x \"$HOME/.local/bin/gitnexus-autoreindex.sh\" ]"
+ck "git init.templateDir set" "git config --global --get init.templateDir"
+ck "git template post-commit hook" "[ -x \"$(git config --global --get init.templateDir)/hooks/post-commit\" ]"
 [ "$fails" -eq 0 ] && echo "ALL CHECKS PASSED" || echo "$fails CHECK(S) FAILED"
 exit "$fails"

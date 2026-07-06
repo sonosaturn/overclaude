@@ -7,6 +7,8 @@ echo "$out" | grep -q 'marketplace add obra/superpowers' || fail "superpowers no
 echo "$out" | grep -q 'claude mcp add context7' || fail "context7 not orchestrated"
 echo "$out" | grep -q 'claude mcp add playwright' || fail "playwright not orchestrated"
 echo "$out" | grep -q 'gitnexus setup' || fail "gitnexus setup not orchestrated"
+echo "$out" | grep -q 'WOULD INSTALL .*/gitnexus-autoreindex.sh' || fail "gitnexus auto-reindex not orchestrated"
+echo "$out" | grep -q 'init.templateDir' || fail "git template post-commit hook not orchestrated"
 # dry-run must not touch the real ~/.claude
 echo "$out" | grep -qi 'DRY-RUN' || fail "dry-run banner missing"
 # 6b: auto-memory symlink restore (layer-2)

@@ -1,0 +1,4 @@
+#!/usr/bin/env sh
+# Auto-installato nei nuovi repo via git init.templateDir (overclaude).
+# Reindexa il repo con GitNexus a ogni commit. Vedi lib/gitnexus-autoreindex.sh.
+exec "$HOME/.local/bin/gitnexus-autoreindex.sh"
