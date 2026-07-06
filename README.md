@@ -49,9 +49,13 @@ Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sinte
 | caveman, grill-me | prosa terse · interrogatorio adversariale dei piani |
 | impeccable | design language per UI |
 | find-skills, skill-creator, handoff | discovery / autoring skill · handoff sessione |
-| brain, conversation-log (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni |
+| brain, conversation-log, context7-mcp (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni + skill companion di context7 |
 
 Tooling user-space installato a parte: `node`, `uv`, `markitdown`, `graphify`.
+
+> **Exa (web search MCP)** non è nel manifest: è un **connector lato account claude.ai**
+> (`mcp.exa.ai/mcp`), non installabile da uno script locale. Aggiungilo una volta dalle
+> impostazioni del tuo account Claude, non per-macchina.
 
 ## Segreti
 

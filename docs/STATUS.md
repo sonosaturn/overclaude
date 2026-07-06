@@ -1,6 +1,19 @@
 # OverClaude — Stato del progetto
 
-Ultimo aggiornamento: 2026-06-29
+Ultimo aggiornamento: 2026-07-06
+
+## Aggiornamento 2026-07-06 — allineamento alla config live
+
+Sincronizzata la repo con la config Claude Code effettivamente in uso:
+
+- **Fix `skills-cli` dispatcher** (`lib/run-component.sh`): `npx skills add <repo>` installa
+  l'**intero** repo (verificato dal vivo: `mattpocock/skills` → 38 skill). Aggiunto
+  `--skill $name --agent claude --global --yes` così installa **solo** la skill nominata.
+- **Bundle `context7-mcp`** nel plugin proprio (`plugins/overclaude/skills/context7-mcp/`):
+  è una skill companion custom senza upstream, come brain/conversation-log.
+- **Exa** documentato nel README come connector lato account claude.ai (non scriptabile).
+- playwright/grill-me/caveman erano già nel manifest → confermati come default voluti e
+  installati anche in locale (macchina e manifest ora combaciano).
 
 ## Stato: BUILD COMPLETA ✅
 

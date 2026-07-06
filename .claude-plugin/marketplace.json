@@ -5,7 +5,7 @@
     {
       "name": "overclaude",
       "source": "./plugins/overclaude",
-      "description": "Brain second-brain skills + conversation-log + SessionStart hook"
+      "description": "Brain second-brain skills + conversation-log + context7-mcp + SessionStart hook"
     }
   ]
 }

@@ -9,7 +9,7 @@ run_component() {
     cmd)        _rc_exec "$arg" ;;
     npm-global) _rc_exec "npm install -g $arg" ;;
     uv-tool)    _rc_exec "uv tool install $arg" ;;
-    skills-cli) _rc_exec "npx skills@latest add $arg" ;;
+    skills-cli) _rc_exec "npx skills@latest add $arg --skill $name --agent claude --global --yes" ;;
     *) echo "unknown component type: $type" >&2; return 1 ;;
   esac
 }
