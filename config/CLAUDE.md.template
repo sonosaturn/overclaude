@@ -36,6 +36,24 @@ cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione chiara>"
 `<tipo>` = feat | fix | docs | refactor | chore. Solo il vault: `git add -A` dentro
 `~/brain`, mai `git -C` su altri repo. Niente push automatico (resta manuale).
 
+## Skill / MCP / plugin: attivi e auto-invocabili di DEFAULT
+
+All'installazione di una **skill**, un **MCP** o un **plugin**, configuralo perché sia
+**usabile automaticamente dal modello**, senza trigger manuale — è il default voluto (context7,
+ponytail, superpowers, impeccable, gitnexus, playwright, …). **Unica eccezione:** ciò che è
+**user-only per design**, riconoscibile dal frontmatter `disable-model-invocation: true`
+(es. `handoff`, `grill-me`) → si lancia a mano con `/<nome>`, non forzarlo auto.
+
+- **Plugin** → abilitato in `settings.json`: `enabledPlugins: { "id@marketplace": true }`.
+- **MCP** → aggiunto e `Connected` (`claude mcp add`), verificabile con `claude mcp list`.
+- **Skill** → model-invocabile: **non** aggiungere `skillOverrides` che la nascondano
+  (`off`/`user-invocable-only`/`name-only`) né impostare tu `disable-model-invocation`; rispetta
+  invece quel flag se ce l'ha messo l'autore.
+- **Verifica post-install:** skill nell'elenco del modello · MCP `Connected` · plugin `true`.
+
+L'installer di OverClaude segue già questa logica (plugin `enabledPlugins: true`, MCP connessi,
+skill non filtrate).
+
 ## Context7
 
 Vedi `~/.claude/rules/context7.md`: usa il MCP Context7 per documentazione aggiornata di

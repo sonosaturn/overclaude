@@ -30,6 +30,11 @@ Copy-Item .env.example .env
 L'installer è **idempotente**: ri-eseguirlo è sicuro e non distruttivo (il merge di
 `settings.json` preserva le tue impostazioni locali).
 
+Ogni componente è configurato per essere **auto-invocabile di default** (il modello lo usa
+senza trigger manuale) — tranne ciò che è user-only per design (`disable-model-invocation: true`,
+es. `handoff`/`grill-me`, che si lanciano con `/<nome>`). Dettaglio in
+[`config/CLAUDE.md.template`](config/CLAUDE.md.template).
+
 ### Anteprima senza modifiche
 
 ```bash
