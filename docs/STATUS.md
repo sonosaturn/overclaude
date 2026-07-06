@@ -14,6 +14,12 @@ Sincronizzata la repo con la config Claude Code effettivamente in uso:
 - **Exa** documentato nel README come connector lato account claude.ai (non scriptabile).
 - playwright/grill-me/caveman erano già nel manifest → confermati come default voluti e
   installati anche in locale (macchina e manifest ora combaciano).
+- **Auto-sync** (`bin/overclaude-sync.sh`): hook PostToolUse(Bash) del **maintainer** che,
+  quando aggiunge una skill (`npx skills … add <repo> --skill <name>`) o un MCP
+  (`claude mcp add <name> -- <cmd>`), appende la riga al manifest, committa e **pusha** in
+  automatico → la repo resta al passo con la config live. Cablato nel `settings.json`
+  personale (gitignore, non nella repo pubblica). Ceiling: solo skill/MCP via i comandi
+  Bash standard; plugin e add interattivi/da terminale utente → sync a mano.
 
 ## Stato: BUILD COMPLETA ✅
 
