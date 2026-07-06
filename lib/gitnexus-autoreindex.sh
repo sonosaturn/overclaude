@@ -6,5 +6,7 @@
 command -v gitnexus >/dev/null 2>&1 || exit 0
 repo="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 [ -n "$repo" ] || exit 0
-setsid gitnexus analyze "$repo" >>/tmp/gitnexus-reindex.log 2>&1 </dev/null &
+# --skip-agents-md: il grafo si aggiorna ma CLAUDE.md/AGENTS.md NON vengono riscritti,
+# altrimenti ogni reindex sporcherebbe il working tree (feedback loop con l'autocommit).
+setsid gitnexus analyze --skip-agents-md "$repo" >>/tmp/gitnexus-reindex.log 2>&1 </dev/null &
 exit 0
