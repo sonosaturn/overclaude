@@ -53,7 +53,11 @@ def main():
           "include": ["documents", "metadatas", "distances"]}
     if where:
         kw["where"] = where
-    res = col.query(**kw)
+    try:
+        res = col.query(**kw)
+    except Exception as e:
+        print(f"(query semantica fallita: {e} — usa rg+INDEX)", file=sys.stderr)
+        return 0
     docs, metas, dists = res["documents"][0], res["metadatas"][0], res["distances"][0]
     if not docs:
         print("(nessun hit semantico)", file=sys.stderr)
