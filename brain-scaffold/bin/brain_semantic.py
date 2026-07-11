@@ -156,7 +156,6 @@ def is_quota_exhausted(vault: str) -> bool:
 def embed(text: str, vault: str, task: str = "RETRIEVAL_DOCUMENT", _retry: int = 0) -> list[float]:
     """Zero-vector se quota esaurita, no-key, o errore. Backoff 30/60/120 su 429."""
     global _consecutive_failures
-    import httpx
     if is_quota_exhausted(vault):
         return [0.0] * EMBED_DIM
     key = load_key()
@@ -165,6 +164,7 @@ def embed(text: str, vault: str, task: str = "RETRIEVAL_DOCUMENT", _retry: int =
     url = f"https://generativelanguage.googleapis.com/v1/{EMBED_MODEL}:embedContent?key={key}"
     payload = {"model": EMBED_MODEL, "content": {"parts": [{"text": text[:8000]}]}, "taskType": task}
     try:
+        import httpx
         resp = httpx.post(url, json=payload, timeout=30)
         if resp.status_code == 429:
             if _retry < 3:

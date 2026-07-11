@@ -64,6 +64,15 @@ def test_vault_root_env(monkeypatch=None):
     finally:
         del os.environ["BRAIN_VAULT"]
 
+def test_embed_quota_exhausted_returns_zero_vector():
+    import tempfile
+    d = tempfile.mkdtemp()
+    bs._QUOTA_CACHE.clear()
+    bs._write_quota_sentinel(d)
+    v = bs.embed("qualsiasi testo", d)
+    assert v == [0.0] * bs.EMBED_DIM
+    bs._QUOTA_CACHE.clear()
+
 if __name__ == "__main__":
     import sys
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
