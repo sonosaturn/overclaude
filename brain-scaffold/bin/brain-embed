@@ -1,0 +1,110 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["chromadb>=1.0.0", "google-genai>=0.1.0", "httpx"]
+# ///
+"""Indicizza i .md del vault in ChromaDB. Incrementale per chunk-hash.
+--changed (default): solo i file toccati dall'ultimo commit. --full: tutto il vault."""
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import brain_semantic as bs
+
+EMBED_DELAY = 0.7  # secondi tra embed — free tier ~100 RPM
+
+
+def _changed_files(vault: str) -> list[str]:
+    try:
+        out = subprocess.run(
+            ["git", "-C", vault, "diff-tree", "--no-commit-id", "--name-only", "-r", "HEAD"],
+            capture_output=True, text=True, timeout=10)
+        return [l for l in out.stdout.splitlines() if l.strip()]
+    except Exception:
+        return []
+
+
+def _all_files(vault: str) -> list[str]:
+    res = []
+    for top in ("conversations", "wiki", "sources"):
+        base = os.path.join(vault, top)
+        for root, _, files in os.walk(base):
+            for f in files:
+                if f.endswith(".md"):
+                    res.append(os.path.relpath(os.path.join(root, f), vault))
+    return res
+
+
+def _project_of(vault: str, relpath: str) -> str:
+    """Estrae il primo [[wikilink]] della riga **Collegamenti:** (se conversazione)."""
+    import re
+    try:
+        for line in Path(os.path.join(vault, relpath)).read_text(encoding="utf-8").splitlines():
+            if line.startswith("**Collegamenti:**"):
+                m = re.search(r'\[\[([^\]|#\n]+?)(?:\|[^\]]+)?\]\]', line)
+                return m.group(1).strip() if m else ""
+    except Exception:
+        pass
+    return ""
+
+
+def main():
+    mode = "--changed"
+    if len(sys.argv) > 1:
+        mode = sys.argv[1]
+    vault = bs.vault_root()
+    if bs.is_quota_exhausted(vault):
+        print("quota Gemini esaurita — skip indexing", file=sys.stderr)
+        return 0
+    if not bs.load_key():
+        print("GEMINI_API_KEY assente — skip indexing", file=sys.stderr)
+        return 0
+
+    rels = _all_files(vault) if mode == "--full" else _changed_files(vault)
+    rels = [r for r in rels if bs.type_from_relpath(r) and r.endswith(".md")]
+    if not rels:
+        return 0
+
+    col = bs.get_collection(vault)
+    try:
+        existing = set(col.get()["ids"])
+    except Exception:
+        existing = set()
+
+    import time
+    added = 0
+    for rel in rels:
+        fpath = os.path.join(vault, rel)
+        try:
+            content = Path(fpath).read_text(encoding="utf-8").strip()
+        except Exception:
+            continue
+        if len(content) < 50:
+            continue
+        fhash = bs.file_hash(fpath)
+        dtype = bs.type_from_relpath(rel)
+        project = _project_of(vault, rel) if dtype == "conversation" else ""
+        for i, chunk in enumerate(bs.chunks(content)):
+            if bs.is_quota_exhausted(vault):
+                print("quota esaurita durante indexing — stop", file=sys.stderr)
+                print(f"+{added} chunk", file=sys.stderr)
+                return 0
+            did = bs.doc_id(rel, i, fhash)
+            if did in existing:
+                continue
+            emb = bs.embed(chunk, vault, task="RETRIEVAL_DOCUMENT")
+            if all(v == 0.0 for v in emb[:10]):
+                continue  # embed fallito: non scrivo zero-vector, ritento al prossimo commit
+            col.add(ids=[did], embeddings=[emb], documents=[chunk],
+                    metadatas=[{"file": os.path.basename(rel), "path": rel,
+                                "type": dtype, "chunk": i, "project": project}])
+            added += 1
+            time.sleep(EMBED_DELAY)
+    print(f"brain-embed: +{added} chunk (totale {col.count()})", file=sys.stderr)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
