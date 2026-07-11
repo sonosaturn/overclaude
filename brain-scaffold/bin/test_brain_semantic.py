@@ -19,6 +19,28 @@ def test_type_from_relpath():
 def test_doc_id_stable():
     assert bs.doc_id("wiki/a.md", 2, "abc") == "wiki/a.md::2::abc"
 
+def test_wikilink_freq(tmp_path=None):
+    import tempfile, os
+    d = tempfile.mkdtemp()
+    os.makedirs(os.path.join(d, "wiki"))
+    with open(os.path.join(d, "wiki", "a.md"), "w") as f:
+        f.write("vedi [[brain-KB]] e [[brain-KB]] e [[ricing-hyprland]]")
+    freq = bs.wikilink_freq(d)
+    assert freq["brain-KB"] == 2
+    assert freq["ricing-hyprland"] == 1
+
+def test_rerank_blends_similarity_and_graph():
+    # doc A: sim alta (dist 0.1) ma freq 0; doc B: sim media (dist 0.4) ma freq alta
+    docs = ["A", "B"]
+    metas = [{"file": "A.md"}, {"file": "B.md"}]
+    dists = [0.1, 0.4]
+    freq = {"A.md": 0, "B.md": 50}
+    scored = bs.rerank(docs, metas, dists, freq, w_graph=0.3)
+    # A resta primo (0.7*0.9=0.63 > B 0.7*0.6+0.3*1.0=0.72)? verifichiamo il calcolo reale
+    order = [m["file"] for _, m, _ in scored]
+    # B ha graph_weight massimo → 0.42+0.3=0.72 > A 0.63 → B primo
+    assert order[0] == "B.md"
+
 if __name__ == "__main__":
     import sys
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]
