@@ -83,6 +83,7 @@ if [ "$DRY_RUN" = 1 ]; then
 else
   mkdir -p "$bindir" "$tpl/hooks"
   cp "$HERE/lib/gitnexus-autoreindex.sh" "$bindir/gitnexus-autoreindex.sh"; chmod +x "$bindir/gitnexus-autoreindex.sh"
+  cp "$HERE/lib/graphify-autoregen.sh" "$bindir/graphify-autoregen.sh"; chmod +x "$bindir/graphify-autoregen.sh"
   cp "$HERE/git-template/hooks/post-commit" "$tpl/hooks/post-commit"; chmod +x "$tpl/hooks/post-commit"
   git config --global init.templateDir "$tpl"
 fi

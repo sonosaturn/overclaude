@@ -1,4 +1,7 @@
 #!/usr/bin/env sh
 # Auto-installato nei nuovi repo via git init.templateDir (overclaude).
-# Reindexa il repo con GitNexus a ogni commit. Vedi lib/gitnexus-autoreindex.sh.
-exec "$HOME/.local/bin/gitnexus-autoreindex.sh"
+# Reindexa con GitNexus (ogni repo) + rigenera il grafo graphify (solo nel vault brain).
+# Entrambi detached e non-bloccanti; graphify-autoregen si auto-guarda al vault.
+# Vedi lib/gitnexus-autoreindex.sh e lib/graphify-autoregen.sh.
+"$HOME/.local/bin/gitnexus-autoreindex.sh" || true
+"$HOME/.local/bin/graphify-autoregen.sh" 2>/dev/null || true
