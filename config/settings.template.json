@@ -4,10 +4,12 @@
   "enabledPlugins": {
     "superpowers@superpowers-dev": true,
     "ponytail@ponytail": true,
-    "overclaude@overclaude": true
+    "overclaude@overclaude": true,
+    "caveman@caveman": true
   },
   "extraKnownMarketplaces": {
     "superpowers-dev": { "source": { "source": "github", "repo": "obra/superpowers" } },
-    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } }
+    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } },
+    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } }
   }
 }

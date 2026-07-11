@@ -8,8 +8,7 @@ mcp|context7|npx -y @upstash/context7-mcp
 mcp|playwright|npx @playwright/mcp@latest
 skills-cli|find-skills|vercel-labs/skills
 skills-cli|skill-creator|anthropics/skills
-skills-cli|handoff|mattpocock/skills
-skills-cli|grill-me|mattpocock/skills
-cmd|caveman|curl -fsSL https://raw.githubusercontent.com/JuliusBrussee/caveman/main/install.sh | bash
+cmd|matt-pocock-skills|npx skills@latest add mattpocock/skills --global --yes
+plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
