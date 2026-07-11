@@ -5,3 +5,4 @@
 # Vedi lib/gitnexus-autoreindex.sh e lib/graphify-autoregen.sh.
 "$HOME/.local/bin/gitnexus-autoreindex.sh" || true
 "$HOME/.local/bin/graphify-autoregen.sh" 2>/dev/null || true
+"$HOME/.local/bin/brain-embed-autoregen.sh" 2>/dev/null || true
