@@ -1,6 +1,22 @@
 {
   "model": "opus",
   "theme": "dark",
+  "enableAllProjectMcpServers": true,
+  "skillListingBudgetFraction": 0.05,
+  "permissions": {
+    "allow": [
+      "mcp__gitnexus",
+      "mcp__context7",
+      "mcp__playwright",
+      "Bash(gitnexus:*)",
+      "Bash(npx gitnexus:*)",
+      "Bash(node .gitnexus/run.cjs:*)",
+      "Bash(npx skills:*)",
+      "Bash(npx skills@latest:*)",
+      "Bash(npx impeccable:*)",
+      "Bash(npx -y impeccable:*)"
+    ]
+  },
   "enabledPlugins": {
     "superpowers@superpowers-dev": true,
     "ponytail@ponytail": true,
