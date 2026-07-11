@@ -42,4 +42,15 @@ add="$( ( cd "$VAULT" && git commit -q --allow-empty -m noop; "$DIR/brain-embed"
 [ "$add" = "+0 chunk" ] || { echo "FAIL: idempotenza rotta, add='$add'"; exit 1; }
 echo "ok idempotenza"
 
+# 4. prune: edit di un file NON deve accumulare chunk stale (total resta 2)
+cat > "$VAULT/wiki/cripto.md" <<'EOF2'
+# Crittografia asimmetrica (rev)
+Chiave pubblica e privata, RSA, scambio di chiavi, firma digitale. Testo revisionato.
+EOF2
+( cd "$VAULT" && git add -A && git commit -qm edit )
+"$DIR/brain-embed" --full >/dev/null 2>&1
+tot="$(cd "$DIR" && uv run --quiet --with chromadb python3 -c "import brain_semantic as bs; print(bs.get_collection('$VAULT').count())" 2>/dev/null)"
+[ "$tot" = "2" ] || { echo "FAIL: prune, total=$tot (atteso 2)"; exit 1; }
+echo "ok prune"
+
 echo "ALL PASS"

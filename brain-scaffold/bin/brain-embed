@@ -54,6 +54,9 @@ def main():
     mode = "--changed"
     if len(sys.argv) > 1:
         mode = sys.argv[1]
+    if mode not in ("--full", "--changed"):
+        print(f"brain-embed: modo sconosciuto '{mode}' (usa --full|--changed)", file=sys.stderr)
+        return 2
     vault = bs.vault_root()
     if bs.is_quota_exhausted(vault):
         print("quota Gemini esaurita — skip indexing", file=sys.stderr)
@@ -87,6 +90,13 @@ def main():
         fhash = bs.file_hash(fpath)
         dtype = bs.type_from_relpath(rel)
         project = _project_of(vault, rel) if dtype == "conversation" else ""
+        stale = [d for d in existing if d.startswith(rel + "::") and not d.endswith("::" + fhash)]
+        if stale:
+            try:
+                col.delete(ids=stale)
+                existing.difference_update(stale)
+            except Exception as e:
+                print(f"prune stale fallito ({rel}): {e}", file=sys.stderr)
         for i, chunk in enumerate(bs.chunks(content)):
             if bs.is_quota_exhausted(vault):
                 print("quota esaurita durante indexing — stop", file=sys.stderr)
