@@ -41,6 +41,29 @@ def test_rerank_blends_similarity_and_graph():
     # B ha graph_weight massimo → 0.42+0.3=0.72 > A 0.63 → B primo
     assert order[0] == "B.md"
 
+def test_quota_sentinel_roundtrip():
+    import tempfile
+    from datetime import datetime, timezone
+    d = tempfile.mkdtemp()
+    assert bs.is_quota_exhausted(d) is False
+    bs._write_quota_sentinel(d)
+    assert bs.is_quota_exhausted(d) is True
+    # sentinel con data vecchia = non attivo
+    p = bs._quota_sentinel(d)
+    with open(p, "w") as f:
+        f.write("2000-01-01")
+    bs._QUOTA_CACHE.clear()
+    assert bs.is_quota_exhausted(d) is False
+
+def test_vault_root_env(monkeypatch=None):
+    import os, tempfile
+    d = tempfile.mkdtemp()
+    os.environ["BRAIN_VAULT"] = d
+    try:
+        assert bs.vault_root() == d
+    finally:
+        del os.environ["BRAIN_VAULT"]
+
 if __name__ == "__main__":
     import sys
     fns = [v for k, v in sorted(globals().items()) if k.startswith("test_")]

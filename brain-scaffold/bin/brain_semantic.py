@@ -5,11 +5,20 @@ import hashlib
 import math
 import os
 import re
+import subprocess
+import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 CHUNK_SIZE = 1500
 CHUNK_OVERLAP = 200
+EMBED_MODEL = "models/gemini-embedding-001"
+EMBED_DIM = 3072
+COLLECTION = "vault"
 _SCOPE = {"conversations": "conversation", "wiki": "wiki", "sources": "source"}
+_MAX_CONSECUTIVE_FAILURES = 2
+_QUOTA_CACHE: dict[str, bool] = {}
+_consecutive_failures = 0
 
 
 def chunks(text: str) -> list[str]:
@@ -76,3 +85,97 @@ def rerank(docs, metas, dists, freq_map, w_graph: float = 0.3):
         scored.append((doc, meta, final))
     scored.sort(key=lambda x: x[2], reverse=True)
     return scored
+
+
+def vault_root() -> str:
+    v = os.environ.get("BRAIN_VAULT")
+    if v:
+        return v
+    try:
+        top = subprocess.run(["git", "rev-parse", "--show-toplevel"],
+                             capture_output=True, text=True, timeout=5)
+        if top.returncode == 0 and top.stdout.strip():
+            return top.stdout.strip()
+    except Exception:
+        pass
+    return os.path.expanduser("~/brain")
+
+
+def load_key() -> str | None:
+    k = os.environ.get("GEMINI_API_KEY")
+    if k:
+        return k
+    envf = os.path.expanduser("~/.config/brain.env")
+    try:
+        for line in Path(envf).read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if line.startswith("GEMINI_API_KEY="):
+                return line.split("=", 1)[1].strip().strip('"').strip("'")
+    except Exception:
+        return None
+    return None
+
+
+def chroma_path(vault: str) -> str:
+    return os.path.join(vault, ".chroma_db")
+
+
+def get_collection(vault: str):
+    import chromadb
+    client = chromadb.PersistentClient(path=chroma_path(vault))
+    return client.get_or_create_collection(name=COLLECTION, metadata={"hnsw:space": "cosine"})
+
+
+def _quota_sentinel(vault: str) -> str:
+    os.makedirs(chroma_path(vault), exist_ok=True)
+    return os.path.join(chroma_path(vault), ".quota_exhausted")
+
+
+def _write_quota_sentinel(vault: str):
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    try:
+        Path(_quota_sentinel(vault)).write_text(today, encoding="utf-8")
+        _QUOTA_CACHE[vault] = True
+    except Exception:
+        pass
+
+
+def is_quota_exhausted(vault: str) -> bool:
+    if _QUOTA_CACHE.get(vault):
+        return True
+    p = _quota_sentinel(vault)
+    if not os.path.exists(p):
+        return False
+    try:
+        written = Path(p).read_text(encoding="utf-8").strip()
+        return written == datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    except Exception:
+        return False
+
+
+def embed(text: str, vault: str, task: str = "RETRIEVAL_DOCUMENT", _retry: int = 0) -> list[float]:
+    """Zero-vector se quota esaurita, no-key, o errore. Backoff 30/60/120 su 429."""
+    global _consecutive_failures
+    import httpx
+    if is_quota_exhausted(vault):
+        return [0.0] * EMBED_DIM
+    key = load_key()
+    if not key:
+        return [0.0] * EMBED_DIM
+    url = f"https://generativelanguage.googleapis.com/v1/{EMBED_MODEL}:embedContent?key={key}"
+    payload = {"model": EMBED_MODEL, "content": {"parts": [{"text": text[:8000]}]}, "taskType": task}
+    try:
+        resp = httpx.post(url, json=payload, timeout=30)
+        if resp.status_code == 429:
+            if _retry < 3:
+                time.sleep(30 * (2 ** _retry))
+                return embed(text, vault, task, _retry + 1)
+            _consecutive_failures += 1
+            if _consecutive_failures >= _MAX_CONSECUTIVE_FAILURES:
+                _write_quota_sentinel(vault)
+            return [0.0] * EMBED_DIM
+        resp.raise_for_status()
+        _consecutive_failures = 0
+        return resp.json()["embedding"]["values"]
+    except Exception:
+        return [0.0] * EMBED_DIM
