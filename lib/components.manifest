@@ -2,6 +2,7 @@
 plugin|superpowers|obra/superpowers
 plugin|ponytail|DietrichGebert/ponytail
 npm-global|gitnexus|gitnexus
+npm-global|codeburn|codeburn
 uv-tool|markitdown|markitdown[all]
 uv-tool|graphify|graphify[gemini]
 mcp|context7|npx -y @upstash/context7-mcp

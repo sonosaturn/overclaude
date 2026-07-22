@@ -5,3 +5,4 @@ node_modules/
 
 # SDD scratch (ledger, briefs, review packages)
 .superpowers/
+__pycache__/

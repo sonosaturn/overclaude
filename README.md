@@ -55,6 +55,7 @@ Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sinte
 | impeccable | design language per UI |
 | find-skills, skill-creator, handoff | discovery / autoring skill · handoff sessione |
 | brain, conversation-log, context7-mcp (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni + skill companion di context7 |
+| codeburn | tracker locale di token/costo AI (dashboard TUI/web/menubar) — CLI user-run, `codeburn` |
 
 Tooling user-space installato a parte: `node`, `uv`, `markitdown`, `graphify`.
 
