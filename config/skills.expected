@@ -1,0 +1,34 @@
+# Skill user-scope attese in ~/.claude/skills — una per riga.
+# Serve a verify.sh per accorgersi quando l'installazione diverge: un repo a monte
+# che cresce (o si svuota) cambia ciò che il manifest installa senza dirlo.
+# Le skill dei plugin non stanno qui: le gestisce enabledPlugins.
+algorithmic-art
+brandkit
+canvas-design
+design-dna
+find-skills
+frontend-design
+gitnexus-cli
+gitnexus-debugging
+gitnexus-exploring
+gitnexus-guide
+gitnexus-impact-analysis
+gitnexus-pdg-query
+gitnexus-pr-review
+gitnexus-refactoring
+gitnexus-taint-analysis
+grill-me
+gsap-core
+gsap-frameworks
+gsap-performance
+gsap-plugins
+gsap-react
+gsap-scrolltrigger
+gsap-timeline
+gsap-utils
+handoff
+impeccable
+motion-design
+skill-creator
+superdesign
+watch

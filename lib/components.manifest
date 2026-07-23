@@ -9,7 +9,11 @@ mcp|context7|npx -y @upstash/context7-mcp
 mcp|playwright|npx @playwright/mcp@latest
 skills-cli|find-skills|vercel-labs/skills
 skills-cli|skill-creator|anthropics/skills
-cmd|matt-pocock-skills|npx skills@latest add mattpocock/skills --global --yes
+# mattpocock/skills contiene decine di skill: installarlo intero ne porterebbe una
+# ventina non volute. Pinnate le due usate — sono user-only per design
+# (disable-model-invocation), si lanciano con /handoff e /grill-me.
+skills-cli|handoff|mattpocock/skills
+skills-cli|grill-me|mattpocock/skills
 plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
