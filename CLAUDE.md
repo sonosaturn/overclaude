@@ -1,3 +1,25 @@
+# Contesto progetto — OverClaude
+
+Repo pubblica che auto-configura un Claude Code "nudo" nella setup avanzata di questa macchina.
+**Non ri-ospita codice di terze parti**: orchestra gli installer ufficiali di ogni componente
+(un solo `lib/components.manifest` da aggiornare) e impacchetta le parti proprie (`brain`,
+`conversation-log`, hook di logging) come plugin servito dalla marketplace della repo stessa.
+
+Entry point: `install.sh` (`sh install.sh --check` per verificare). Aggiungere un componente
+= aggiungere una riga a `lib/components.manifest`, non uno script nuovo.
+
+## Commit automatico
+
+**Committa automaticamente, senza chiedere conferma**, a ogni unità di lavoro conclusa e
+verificata (milestone, feature, fix). **Non a ogni turno e non a lavoro a metà.**
+
+```
+cd ~/projects/overclaude && git add -A && git commit -m "<tipo>: <descrizione chiara>"
+```
+
+`<tipo>` = feat | fix | docs | refactor | chore. Solo questa root, mai `git -C` su altri repo.
+**Niente trailer `Co-Authored-By` o altre tracce AI** (repo pubblica). **Niente push automatico.**
+
 <!-- gitnexus:start -->
 # GitNexus — Code Intelligence
 
