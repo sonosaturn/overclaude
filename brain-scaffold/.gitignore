@@ -15,3 +15,6 @@ conversations/.current-session
 # Sistema
 .DS_Store
 .trash/
+
+# Cache Python
+__pycache__/

@@ -78,7 +78,20 @@ if [ -d "$HOME/brain/claude-memory" ] || [ "$DRY_RUN" = 1 ]; then
   proj="$(printf '%s' "$HOME" | sed 's#/#-#g')"        # /home/x -> -home-x (Claude Code project key)
   memlink="$HOME/.claude/projects/$proj/memory"
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD LINK $memlink -> ~/brain/claude-memory"
-  else mkdir -p "$(dirname "$memlink")"; rm -rf "$memlink"; ln -s "$HOME/brain/claude-memory" "$memlink"; fi
+  else
+    mkdir -p "$(dirname "$memlink")"
+    # Se lì c'è già una directory vera, contiene memorie che Claude ha scritto: vanno
+    # travasate nel vault prima di sostituirla, e senza sovrascrivere ciò che il vault
+    # ha già. Un `rm -rf` diretto le perderebbe in silenzio.
+    if [ -d "$memlink" ] && [ ! -L "$memlink" ]; then
+      for f in "$memlink"/*; do
+        [ -e "$f" ] || continue
+        [ -e "$HOME/brain/claude-memory/$(basename "$f")" ] || cp -r "$f" "$HOME/brain/claude-memory/"
+      done
+      log "auto-memory preesistente travasata nel vault"
+    fi
+    rm -rf "$memlink"; ln -s "$HOME/brain/claude-memory" "$memlink"
+  fi
 fi
 
 # 7. secrets
