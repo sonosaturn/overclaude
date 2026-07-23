@@ -99,6 +99,27 @@ if [ ! -f "$HERE/.env" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD CREATE .env from example"; else cp "$HERE/.env.example" "$HERE/.env"; fi
 fi
 
+# 7b. Il tooling del vault (brain-recall, brain-embed, graphify-run) legge la key da
+#     ~/.config/brain.env, non dal .env della repo: gira anche fuori da qui, e i segreti
+#     runtime non devono vivere dentro l'albero di un repo. Senza questo file la key nel
+#     .env non raggiunge mai il vault. Non sovrascrivo: se esiste, l'ha scritto l'utente.
+if [ "$DRY_RUN" = 1 ]; then echo "WOULD WRITE ~/.config/brain.env (se assente)"
+elif [ ! -f "$HOME/.config/brain.env" ]; then
+  # shellcheck disable=SC1090
+  [ -f "$HERE/.env" ] && . "$HERE/.env"
+  mkdir -p "$HOME/.config"
+  umask 077
+  {
+    echo "# brain.env — caricato dalla shell (vedi zshrc/bashrc) e dagli hook del vault."
+    echo "# Vive fuori da qualsiasi repo di proposito: non finisce in nessun commit."
+    echo "export GEMINI_API_KEY=${GEMINI_API_KEY:-}"
+    echo "export GRAPHIFY_GEMINI_MODEL=${GRAPHIFY_GEMINI_MODEL:-gemini-3.5-flash}"
+    echo "export GRAPHIFY_GEMINI_MODELS=${GRAPHIFY_GEMINI_MODELS:-gemini-3.5-flash,gemini-3-flash-preview,gemini-3.1-flash-lite}"
+  } > "$HOME/.config/brain.env"
+  chmod 600 "$HOME/.config/brain.env"
+  log "scritto ~/.config/brain.env (aggiungi il source nella tua shell rc)"
+fi
+
 # 8. gitnexus auto-reindex on commit: new repos auto-implant the post-commit hook via
 #    git init.templateDir. First commit -> full analyze, later commits -> incremental.
 bindir="$HOME/.local/bin"

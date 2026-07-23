@@ -11,6 +11,8 @@ echo "$out" | grep -q 'WOULD INSTALL .*/gitnexus-autoreindex.sh' || fail "gitnex
 echo "$out" | grep -q 'init.templateDir' || fail "git template post-commit hook not orchestrated"
 # dry-run must not touch the real ~/.claude
 echo "$out" | grep -qi 'DRY-RUN' || fail "dry-run banner missing"
+# 7b: senza brain.env il tooling del vault resta senza key anche con il .env compilato
+echo "$out" | grep -q 'WOULD WRITE ~/.config/brain.env' || fail "brain.env not orchestrated"
 # 6b: auto-memory symlink restore (layer-2)
 pout="$(sh "$root/install.sh" --dry-run --personal=/tmp/nope 2>&1)" || fail "personal dry-run nonzero"
 echo "$pout" | grep -q 'WOULD OVERLAY personal' || fail "personal overlay not announced"

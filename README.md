@@ -69,6 +69,13 @@ Nessuna chiave nella repo. Copia `.env.example` → `.env` (gitignorato) e inser
 
 - `CONTEXT7_API_KEY` — opzionale (context7 ha un free tier).
 - `GEMINI_API_KEY` + `GRAPHIFY_GEMINI_MODEL(S)` — per il grafo `graphify` del vault.
+- `MAGIC_API_KEY` — per l'MCP `magic` (componenti UI 21st.dev).
+
+I segreti **runtime** stanno invece in `~/.config/brain.env`, fuori da qualsiasi repo:
+`install.sh` lo crea a `600` se manca. Mai chiavi in `~/.claude/settings.json`.
+
+Dove prenderle e come verificarle, un passo alla volta: **[`docs/MANUAL-STEPS.md`](docs/MANUAL-STEPS.md)**
+— copre anche il connector Exa e la key Groq della skill `watch`.
 
 ## Layer personale (opzionale)
 
