@@ -56,6 +56,15 @@ if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
 fi
 [ "$DRY_RUN" = 1 ] || cp "$HERE"/config/rules/*.md "$HOME/.claude/rules/"
 
+# caveman e ponytail sono modalità perenni: i plugin leggono il livello da questi file
+# di stato, senza i quali restano inattivi. Non sovrascrivo se esistono già: un livello
+# scelto dall'utente (lite/ultra) va rispettato al reinstall.
+for _mode in caveman ponytail; do
+  _flag="$HOME/.claude/.${_mode}-active"
+  if [ "$DRY_RUN" = 1 ]; then echo "WOULD SET $_mode=full"
+  elif [ ! -f "$_flag" ]; then printf 'full' > "$_flag"; log "$_mode attivato (full)"; fi
+done
+
 # 6. brain scaffold
 if [ ! -d "$HOME/brain" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD SCAFFOLD ~/brain"; else cp -r "$HERE/brain-scaffold" "$HOME/brain"; (cd "$HOME/brain" && git init -q 2>/dev/null || true); fi

@@ -20,8 +20,28 @@ command -v jq >/dev/null 2>&1 || exit 0
 cmd="$(jq -r '.tool_input.command // empty')" 2>/dev/null || exit 0
 [ -n "$cmd" ] || exit 0
 
-# first_nonflag <words...> → primo token che non inizia per '-'
-first_nonflag() { for w in "$@"; do case "$w" in -*) ;; *) printf '%s' "$w"; return;; esac; done; }
+# Comandi composti (';', '|', '&&', newline) non sono attribuibili con certezza: il
+# parsing si porterebbe dietro shell estranea, che finirebbe nel manifest e che
+# run-component esegue con eval sulla macchina di chi installa. Meglio saltare il
+# sync — l'add si può sempre rilanciare da solo.
+case "$cmd" in
+  *';'*|*'|'*|*'&&'*|*'
+'*) exit 0 ;;
+esac
+
+# first_nonflag <words...> → primo token che non è un flag né il valore di un flag
+# che ne prende uno (`--scope user` darebbe altrimenti name="user").
+first_nonflag() {
+  _skip=0
+  for w in "$@"; do
+    if [ "$_skip" = 1 ]; then _skip=0; continue; fi
+    case "$w" in
+      --scope|-s|--transport|-t|--env|-e|--header|-H) _skip=1 ;;
+      -*) ;;
+      *) printf '%s' "$w"; return ;;
+    esac
+  done
+}
 # redact_secrets: azzera i valori sensibili in una stringa comando
 redact_secrets() {
   printf '%s' "$1" | sed -E \

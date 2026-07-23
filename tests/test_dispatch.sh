@@ -5,7 +5,7 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 . "$root/lib/run-component.sh"
 DRY_RUN=1
 out="$(run_component mcp playwright 'npx @playwright/mcp@latest')"
-echo "$out" | grep -q 'claude mcp add playwright' || fail "mcp dispatch wrong: $out"
+echo "$out" | grep -q 'claude mcp add --scope user playwright' || fail "mcp dispatch wrong: $out"
 out="$(run_component plugin ponytail 'DietrichGebert/ponytail')"
 echo "$out" | grep -q 'plugin marketplace add DietrichGebert/ponytail' || fail "plugin dispatch wrong"
 out="$(run_component skills-cli grill-me 'mattpocock/skills')"

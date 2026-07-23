@@ -21,11 +21,18 @@
     "superpowers@superpowers-dev": true,
     "ponytail@ponytail": true,
     "overclaude@overclaude": true,
-    "caveman@caveman": true
+    "caveman@caveman": true,
+    "designer-toolkit@designer-skills": true,
+    "ux-strategy@designer-skills": true,
+    "cognitive-accessibility@designer-skills": true,
+    "accessible-content@designer-skills": true,
+    "nano-banana@devon-claude-skills": true
   },
   "extraKnownMarketplaces": {
     "superpowers-dev": { "source": { "source": "github", "repo": "obra/superpowers" } },
     "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } },
-    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } }
+    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } },
+    "designer-skills": { "source": { "source": "github", "repo": "Owl-Listener/designer-skills" } },
+    "devon-claude-skills": { "source": { "source": "github", "repo": "devonjones/devon-claude-skills" } }
   }
 }

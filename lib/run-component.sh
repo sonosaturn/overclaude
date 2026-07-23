@@ -6,7 +6,9 @@ run_component() {
   case "$type" in
     plugin)     case "$name" in *@*) _pid="$name" ;; *) _pid="${name}@${name}" ;; esac
                 _rc_exec "claude plugin marketplace add $arg && claude plugin install $_pid" ;;
-    mcp)        _rc_exec "claude mcp add $name -- $arg" ;;
+    # --scope user: senza, il default di `claude mcp add` è local e lega l'MCP
+    # alla cartella da cui gira l'installer invece che all'utente.
+    mcp)        _rc_exec "claude mcp add --scope user $name -- $arg" ;;
     cmd)        _rc_exec "$arg" ;;
     npm-global) _rc_exec "npm install -g $arg" ;;
     uv-tool)    _rc_exec "uv tool install $arg" ;;
