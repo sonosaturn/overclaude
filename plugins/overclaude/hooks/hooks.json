@@ -11,7 +11,13 @@
     "Stop": [
       {
         "hooks": [
-          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/autocommit.sh\"" }
+          { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/autocommit.sh\"" },
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/hooks/log-session.py\"",
+            "timeout": 15,
+            "statusMessage": "Aggiorno il log conversazione..."
+          }
         ]
       }
     ]

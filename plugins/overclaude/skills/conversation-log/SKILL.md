@@ -26,13 +26,20 @@ un **nuovo file** nasce solo a una nuova sessione (lo fa l'hook).
 ## Marker `<!-- curated -->` (IMPORTANTE)
 Quando scrivi il log seguendo questa skill, includi **sempre** la riga
 `<!-- curated -->` subito dopo l'header (vedi Formato). È il segnale che il file è
-curato dal modello e non va rigenerato da nessuno.
+curato dal modello.
 
-> Il marker è predisposto per un paracadute deterministico — un hook `Stop` che, se il
-> marker manca, rigeneri il file dal transcript `.jsonl` — che **non è ancora incluso in
-> questo plugin**. Finché non c'è, l'unica cosa che scrive il log sei tu: se salti un
-> turno, quel turno non c'è. Scrivi il marker lo stesso, così il giorno in cui il
-> paracadute arriva non deve rileggere sessioni già curate.
+Un **hook `Stop`** (`log-session.py`, incluso nel plugin) fa da paracadute deterministico,
+a ogni fine turno:
+
+- **Senza marker** → rigenera l'intero file dal transcript `.jsonl`: prompt verbatim,
+  risposte col codice strippato. Il log non è mai vuoto.
+- **Con marker, ma con turni mancanti** → non riscrive niente di ciò che hai curato:
+  accoda in coda solo i turni che nel file non ci sono, sotto un separatore che li
+  segnala come automatici. Copre il caso in cui curi i primi turni e poi salti.
+- **Con marker e tutti i turni presenti** → non tocca nulla. La tua versione vince.
+
+Quindi: **cura il log tu**, che è sempre la versione migliore. Il paracadute esiste per
+le sessioni in cui salti, non per sostituirti.
 
 ## Regole di contenuto (rigorose)
 - **Prompt dell'utente**: copiati **VERBATIM**, senza modificare nulla.
