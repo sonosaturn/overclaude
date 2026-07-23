@@ -23,6 +23,17 @@ A **ogni turno** (dopo aver risposto), **sovrascrivere** il file attivo con il l
 aggiornato dall'inizio della sessione fino a ora. Stesso file per tutta la sessione;
 un **nuovo file** nasce solo a una nuova sessione (lo fa l'hook).
 
+## Marker `<!-- curated -->` (IMPORTANTE)
+Quando scrivi il log seguendo questa skill, includi **sempre** la riga
+`<!-- curated -->` subito dopo l'header (vedi Formato). È il segnale che il file è
+curato dal modello e non va rigenerato da nessuno.
+
+> Il marker è predisposto per un paracadute deterministico — un hook `Stop` che, se il
+> marker manca, rigeneri il file dal transcript `.jsonl` — che **non è ancora incluso in
+> questo plugin**. Finché non c'è, l'unica cosa che scrive il log sei tu: se salti un
+> turno, quel turno non c'è. Scrivi il marker lo stesso, così il giorno in cui il
+> paracadute arriva non deve rileggere sessioni già curate.
+
 ## Regole di contenuto (rigorose)
 - **Prompt dell'utente**: copiati **VERBATIM**, senza modificare nulla.
 - **Risposte di Claude**: **riassunte**, in forma sintetica.
@@ -48,6 +59,8 @@ non file orfani. Solo `[[wikilink]]` crea un edge; i link markdown `[testo](file
 # Conversazione DD/MM/YYYY HH:MM
 
 > Log curato. Prompt utente: verbatim. Risposte Claude: riassunte, senza blocchi di codice.
+
+<!-- curated -->
 
 **Collegamenti:** [[progetto-1]] · [[tema-o-pagina-wiki]] · [[altro-progetto]]
 

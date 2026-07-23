@@ -42,13 +42,32 @@ first_nonflag() {
     esac
   done
 }
-# redact_secrets: azzera i valori sensibili in una stringa comando
+# redact_secrets: azzera i valori sensibili in una stringa comando.
+# Niente flag `I` di GNU sed: va girare anche sul sed BSD di macOS, quindi le
+# varianti di maiuscole sono esplicite (env var maiuscole, flag minuscoli).
 redact_secrets() {
   printf '%s' "$1" | sed -E \
-    -e 's/(API_KEY=)[^ ]+/\1SET_IN_ENV/g' \
-    -e 's/([A-Za-z_]*TOKEN=)[^ ]+/\1SET_IN_ENV/g' \
-    -e 's/([A-Za-z_]*SECRET=)[^ ]+/\1SET_IN_ENV/g' \
-    -e 's/(--api-key[= ])[^ ]+/\1SET_IN_ENV/g'
+    -e 's/([A-Z0-9_]*(KEY|TOKEN|SECRET|PASSWORD|PASSWD|CREDENTIALS?|AUTH|SESSION|COOKIE|DSN)[A-Z0-9_]*=)[^ ]+/\1SET_IN_ENV/g' \
+    -e 's/(--?(api-key|apikey|key|token|secret|password|passwd|auth|authorization|bearer|header|credential|cookie)[= ])[^ ]+/\1SET_IN_ENV/g' \
+    -e 's#(https?://)[^/ :@]+:[^/ @]+@#\1SET_IN_ENV@#g' \
+    -e 's/([?&](key|token|api_key|access_token|apikey|auth)=)[^& ]+/\1SET_IN_ENV/g' \
+    -e "s#$HOME#\$HOME#g"
+}
+
+# looks_secret: fail-closed. La redazione conosce solo le forme che le abbiamo
+# insegnato; questo intercetta ciò che le sfugge guardando la *forma* del token.
+# Se scatta non pubblichiamo niente: un sync mancato si rimedia rilanciando l'add,
+# un segreto su un repo pubblico no.
+looks_secret() {
+  printf '%s' "$1" | grep -Eq \
+    -e '(sk|pk|rk)-[A-Za-z0-9_-]{16,}' \
+    -e '(ghp|gho|ghs|ghu|ghr)_[A-Za-z0-9]{16,}|github_pat_[A-Za-z0-9_]{20,}' \
+    -e 'xox[abposr]-[A-Za-z0-9-]{10,}' \
+    -e 'AKIA[0-9A-Z]{16}' \
+    -e 'AIza[0-9A-Za-z_-]{20,}' \
+    -e '(hf|gsk|st_sk|ctx7sk|nvapi|glpat|dop_v1)[-_][A-Za-z0-9_-]{16,}' \
+    -e 'eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}' \
+    -e '(^| )[A-Za-z0-9_+/=-]{40,}( |$)'
 }
 
 line=""
@@ -96,6 +115,14 @@ case " $cmd " in
     ;;
   *) exit 0 ;;
 esac
+
+# La redazione vale per ogni ramo, non solo per gli MCP: anche un `npx skills add`
+# può portarsi dietro un token. Poi il fail-closed sulla riga finale.
+line="$(redact_secrets "$line")"
+if looks_secret "$line"; then
+  printf '{"systemMessage":"overclaude: sync saltato, il comando contiene un valore che sembra un segreto"}\n'
+  exit 0
+fi
 
 # dedup: riga identica o stesso type+name già dichiarati
 grep -qxF "$line" "$MANIFEST" && exit 0

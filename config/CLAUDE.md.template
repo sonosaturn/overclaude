@@ -29,7 +29,7 @@ prese o a un progetto per nome** (es. "come avevamo deciso…", "nella scorsa se
 3. Rispondi usando ciò che trovi e **cita** la sessione/pagina (es. "(sess. 25/06)").
 
 Cerca solo quando la domanda tocca davvero lavoro passato — non ad ogni prompt. Per
-domande di conoscenza generale sul vault (non sulle conversazioni) usa la skill `brain`.
+domande di conoscenza generale sul vault (non sulle conversazioni) usa la skill `overclaude:brain`.
 
 ## Commit automatico del vault ~/brain
 

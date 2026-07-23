@@ -39,4 +39,26 @@ grep -qxF 'mcp|magic|npx -y @21st-dev/magic@latest API_KEY=SET_IN_ENV' "$d/lib/c
   || fail "redazione o parsing base rotti: $(cat "$d/lib/components.manifest")"
 rm -rf "$d"
 
+# 4. Redazione ampliata: flag e variabili oltre le quattro forme originali.
+d="$(new_repo)"
+run_sync "$d" 'claude mcp add svc -- npx -y some-mcp --token abcdef1234 DB_PASSWORD=hunter2'
+got="$(cat "$d/lib/components.manifest")"
+case "$got" in
+  *abcdef1234*|*hunter2*) fail "valore sensibile non redatto: $got" ;;
+esac
+rm -rf "$d"
+
+# 5. Fail-closed: una forma che la redazione non conosce non deve essere pubblicata.
+d="$(new_repo)"
+run_sync "$d" 'claude mcp add svc -- npx -y some-mcp ghp_0123456789abcdefghijklmnopqrstuvwxyz'
+[ -s "$d/lib/components.manifest" ] && fail "token pubblicato: $(cat "$d/lib/components.manifest")"
+rm -rf "$d"
+
+# 6. Il path della home non finisce nel manifest (username fuori, ed è anche portabile).
+d="$(new_repo)"
+run_sync "$d" "claude mcp add local-mcp -- node $HOME/tools/mcp.js"
+grep -qxF 'mcp|local-mcp|node $HOME/tools/mcp.js' "$d/lib/components.manifest" \
+  || fail "home non normalizzata: $(cat "$d/lib/components.manifest")"
+rm -rf "$d"
+
 echo "PASS test_sync"

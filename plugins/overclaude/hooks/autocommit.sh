@@ -8,7 +8,8 @@
 #
 # ponytail: messaggio generico + git add -A; se serve granularità, committa a mano prima del Stop.
 set -eu
-REPO="${OVERCLAUDE_REPO:-$HOME/overclaude}"
+# Stesso default di bin/overclaude-sync.sh: i due hook devono guardare lo stesso repo.
+REPO="${OVERCLAUDE_REPO:-$HOME/projects/overclaude}"
 [ -d "$REPO/.git" ] || exit 0
 cd "$REPO" || exit 0
 
