@@ -35,3 +35,4 @@ plugin|accessible-content@designer-skills|Owl-Listener/designer-skills
 plugin|nano-banana@devon-claude-skills|devonjones/devon-claude-skills
 # --- UI component MCP (key redatta: vera in .env come MAGIC_API_KEY) ---
 mcp|magic|npx -y @21st-dev/magic@latest API_KEY=SET_IN_ENV
+mcp|user|npx -y @upstash/context7-mcp 2>&1 | tail -2; claude mcp add --scope user playwright -- npx @playwright/mcp@latest 2>&1 | tail -2
