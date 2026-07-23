@@ -36,6 +36,11 @@ while IFS='|' read -r type name arg; do
     . "$HERE/.env"
     [ -n "${CONTEXT7_API_KEY:-}" ] && arg="$arg --api-key $CONTEXT7_API_KEY" || true
   fi
+  if [ "$name" = "magic" ] && [ -f "$HERE/.env" ]; then
+    # shellcheck disable=SC1090
+    . "$HERE/.env"
+    [ -n "${MAGIC_API_KEY:-}" ] && arg="npx -y @21st-dev/magic@latest API_KEY=$MAGIC_API_KEY" || true
+  fi
   run_component "$type" "$name" "$arg" || log "WARN: $name failed (continuing)"
 done < "$HERE/lib/components.manifest"
 

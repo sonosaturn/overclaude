@@ -1,22 +1,19 @@
 #!/usr/bin/env sh
 # overclaude-sync.sh — PostToolUse(Bash) hook.
 #
-# Legge il JSON del hook su stdin. Se il comando bash appena eseguito ha aggiunto
-# una **skill** (`npx skills … add <repo> --skill <name>`) o un **MCP**
-# (`claude mcp add <name> -- <cmd>`), appende la riga corrispondente al manifest di
+# Se il comando bash appena eseguito ha aggiunto una **skill** (`npx skills add`,
+# con o senza `--skill`), un **MCP** (`claude mcp add … -- <cmd>`) o un **plugin**
+# (`claude plugin install <name>@<marketplace>`), appende la riga al manifest di
 # overclaude (se manca), committa e **pusha** — così la repo resta al passo con la config.
 #
 # PostToolUse scatta solo su tool riuscito → niente sync su add falliti.
-#
-# ponytail: cattura solo skill/MCP aggiunti con le forme di comando standard via Bash.
-#           Plugin, add interattivi (/plugin), o comandi dal terminale dell'utente NON
-#           passano di qui → in quei casi lancia questo script a mano (o aggiorna il
-#           manifest e committa). Upgrade path: estendere il case per `claude plugin install`
-#           quando servirà (richiede risolvere il source della marketplace).
+# I **segreti** (API_KEY/TOKEN/SECRET/--api-key) vengono REDATTI prima di scrivere e
+# pushare (il manifest è pubblico). La key vera vive nel .env di overclaude.
 set -eu
 
-REPO="${OVERCLAUDE_REPO:-$HOME/overclaude}"   # override per i test
+REPO="${OVERCLAUDE_REPO:-$HOME/projects/overclaude}"   # override per i test
 MANIFEST="$REPO/lib/components.manifest"
+SETTINGS="$HOME/.claude/settings.json"
 [ -f "$MANIFEST" ] || exit 0
 command -v jq >/dev/null 2>&1 || exit 0
 
@@ -25,6 +22,14 @@ cmd="$(jq -r '.tool_input.command // empty')" 2>/dev/null || exit 0
 
 # first_nonflag <words...> → primo token che non inizia per '-'
 first_nonflag() { for w in "$@"; do case "$w" in -*) ;; *) printf '%s' "$w"; return;; esac; done; }
+# redact_secrets: azzera i valori sensibili in una stringa comando
+redact_secrets() {
+  printf '%s' "$1" | sed -E \
+    -e 's/(API_KEY=)[^ ]+/\1SET_IN_ENV/g' \
+    -e 's/([A-Za-z_]*TOKEN=)[^ ]+/\1SET_IN_ENV/g' \
+    -e 's/([A-Za-z_]*SECRET=)[^ ]+/\1SET_IN_ENV/g' \
+    -e 's/(--api-key[= ])[^ ]+/\1SET_IN_ENV/g'
+}
 
 line=""
 case " $cmd " in
@@ -36,17 +41,38 @@ case " $cmd " in
     name="$(first_nonflag ${after%% -- *})"
     mcpcmd="${after#* -- }"
     [ -n "$name" ] && [ -n "$mcpcmd" ] || exit 0
+    mcpcmd="$(redact_secrets "$mcpcmd")"
     line="mcp|$name|$mcpcmd"
     ;;
+  *" claude plugin install "*)
+    after="${cmd#*claude plugin install }"
+    # shellcheck disable=SC2086
+    pid="$(first_nonflag $after)"          # es. designer-toolkit@designer-skills
+    case "$pid" in *@*) ;; *) exit 0 ;; esac
+    mkt="${pid#*@}"
+    # risolvi il source repo della marketplace dai settings
+    repo="$(jq -r --arg m "$mkt" '.extraKnownMarketplaces[$m].source.repo // empty' "$SETTINGS" 2>/dev/null)"
+    [ -n "$repo" ] || exit 0
+    # sync solo se il plugin risulta davvero abilitato
+    jq -e --arg p "$pid" '.enabledPlugins[$p]==true' "$SETTINGS" >/dev/null 2>&1 || exit 0
+    line="plugin|$pid|$repo"
+    ;;
   *" skills"*" add "*)
-    case "$cmd" in *"--skill "*) ;; *) exit 0;; esac
     after="${cmd#*skills}"; after="${after#* add }"
     # shellcheck disable=SC2086
     repo="$(first_nonflag $after)"
-    name="${cmd#*--skill }"; name="${name%% *}"
-    [ -n "$repo" ] && [ -n "$name" ] || exit 0
-    [ -e "$HOME/.claude/skills/$name" ] || exit 0   # verifica che sia davvero installata
-    line="skills-cli|$name|$repo"
+    [ -n "$repo" ] || exit 0
+    case "$cmd" in
+      *"--skill "*)
+        name="${cmd#*--skill }"; name="${name%% *}"
+        [ -n "$name" ] || exit 0
+        [ -e "$HOME/.claude/skills/$name" ] || exit 0   # verifica installata
+        line="skills-cli|$name|$repo" ;;
+      *)
+        # install intero repo (multi/single skill senza --skill: gsap, superdesign, …)
+        label="$(basename "$repo" | sed 's/\.git$//')"
+        line="skills-repo|$label|$repo" ;;
+    esac
     ;;
   *) exit 0 ;;
 esac
