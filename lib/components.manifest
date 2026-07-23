@@ -2,6 +2,7 @@
 plugin|superpowers|obra/superpowers
 plugin|ponytail|DietrichGebert/ponytail
 npm-global|gitnexus|gitnexus
+npm-global|codeburn|codeburn
 uv-tool|markitdown|markitdown[all]
 uv-tool|graphify|graphify[gemini]
 mcp|context7|npx -y @upstash/context7-mcp
@@ -12,3 +13,25 @@ cmd|matt-pocock-skills|npx skills@latest add mattpocock/skills --global --yes
 plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
+# --- design/UI skills (review lug 2026) ---
+skills-cli|frontend-design|anthropics/skills
+skills-cli|brandkit|Leonxlnx/taste-skill
+skills-repo|superdesign-skill|superdesigndev/superdesign-skill
+skills-repo|design-dna|zanwei/design-dna
+# --- motion skills ---
+skills-repo|gsap-skills|greensock/gsap-skills
+skills-repo|motion-design-skill|LottieFiles/motion-design-skill
+# --- 3D / generative art ---
+skills-cli|algorithmic-art|anthropics/skills
+skills-cli|canvas-design|anthropics/skills
+# --- video analysis ---
+skills-repo|claude-video|bradautomates/claude-video
+# --- design-skills plugins (cherry-pick) ---
+plugin|designer-toolkit@designer-skills|Owl-Listener/designer-skills
+plugin|ux-strategy@designer-skills|Owl-Listener/designer-skills
+plugin|cognitive-accessibility@designer-skills|Owl-Listener/designer-skills
+plugin|accessible-content@designer-skills|Owl-Listener/designer-skills
+# --- image generation (needs GEMINI_API_KEY + billing) ---
+plugin|nano-banana@devon-claude-skills|devonjones/devon-claude-skills
+# --- UI component MCP (key redatta: vera in .env come MAGIC_API_KEY) ---
+mcp|magic|npx -y @21st-dev/magic@latest API_KEY=SET_IN_ENV

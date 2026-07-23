@@ -31,15 +31,31 @@ un **nuovo file** nasce solo a una nuova sessione (lo fa l'hook).
   - Niente output lunghi: solo decisioni, azioni, esiti, file toccati.
 - Lingua: italiano (come la conversazione).
 
+## Wikilink `[[...]]` (per il grafo)
+Le conversazioni devono diventare **nodi collegati** nel grafo (Obsidian/graphify),
+non file orfani. Solo `[[wikilink]]` crea un edge; i link markdown `[testo](file.md)` no.
+- **Riga `**Collegamenti:**`** in testa al file (dopo l'header): elenca i progetti e le
+  entità ricorrenti toccate, ognuno come `[[nome]]`. Usa gli **stessi nomi** delle pagine
+  wiki / dei progetti quando esistono (es. `[[ricing-hyprland]]`, `[[brain-KB]]`,
+  `[[config-repo-pubblica]]`), così il nodo si risolve invece di restare "unresolved".
+- Inline: alla **prima menzione** di un progetto o di una pagina wiki nel corpo, scrivilo
+  come `[[nome]]`. Non wikilinkare ogni ripetizione — solo la prima, e solo concetti che
+  meritano un nodo (progetti, temi, pagine wiki), non file di codice o comandi.
+- Nomi coerenti e in kebab-case, uguali tra sessioni: due grafie diverse = due nodi diversi.
+
 ## Formato
 ```
 # Conversazione DD/MM/YYYY HH:MM
+
+> Log curato. Prompt utente: verbatim. Risposte Claude: riassunte, senza blocchi di codice.
+
+**Collegamenti:** [[progetto-1]] · [[tema-o-pagina-wiki]] · [[altro-progetto]]
 
 ## HH:MM — Utente
 <prompt verbatim>
 
 ## Claude
-- <azione/decisione>
+- <azione/decisione, con [[progetto]] wikilinkato alla prima menzione>
 - modifica su "percorso/file": <spiegazione>
 - eseguito <comando>: <esito sintetico>
 
@@ -53,7 +69,7 @@ un **nuovo file** nasce solo a una nuova sessione (lo fa l'hook).
 sono ormai chiari) aggiungere/aggiornare la riga della sessione corrente:
 
 ```
-- [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · <temi sintetici, separati da ;> · *progetti:* <nomi>
+- [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · <temi sintetici, separati da ;> · *progetti:* [[progetto-1]] [[progetto-2]]
 ```
 
 Una riga per sessione, ordine cronologico. È la "superficie di ricerca": deve

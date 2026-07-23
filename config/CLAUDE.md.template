@@ -17,6 +17,10 @@ prese o a un progetto per nome** (es. "come avevamo deciso…", "nella scorsa se
    temi, progetti). È economico, leggilo sempre per primo.
 2. Individua le sessioni rilevanti e apri **solo** quei `Conv_*.md`; se serve,
    `rg -i "<termine>" ~/brain/conversations ~/brain/wiki`.
+2b. **Recall semantico** (per parafrasi/sinonimi che `rg` non prende): lancia
+    `~/brain/bin/brain-recall "<query>" [--conv|--kb]`. Ritorna i chunk più vicini
+    per significato con score. Fail-open: se manca la key o l'indice, degrada su rg+INDEX.
+    Query embeddata solo qui (mai per-prompt) → nessuno spreco.
 3. Rispondi usando ciò che trovi e **cita** la sessione/pagina (es. "(sess. 25/06)").
 
 Cerca solo quando la domanda tocca davvero lavoro passato — non ad ogni prompt. Per

@@ -1,0 +1,77 @@
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["chromadb>=1.0.0", "google-genai>=0.1.0", "httpx"]
+# ///
+"""Recall semantico: embedda la query, cerca in ChromaDB, rerank sui wikilink, stampa top-N."""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import brain_semantic as bs
+
+N_RESULTS = 5
+
+
+def main():
+    args = [a for a in sys.argv[1:]]
+    scope = "--all"
+    for a in list(args):
+        if a in ("--conv", "--kb", "--all"):
+            scope = a
+            args.remove(a)
+    query = " ".join(args).strip()
+    if not query:
+        print("uso: brain-recall \"query\" [--conv|--kb|--all]", file=sys.stderr)
+        return 2
+
+    vault = bs.vault_root()
+    if not bs.load_key():
+        print("(recall semantico non disponibile: GEMINI_API_KEY assente — usa rg+INDEX)", file=sys.stderr)
+        return 0
+    try:
+        col = bs.get_collection(vault)
+        total = col.count()
+    except Exception as e:
+        print(f"(ChromaDB non disponibile: {e} — usa rg+INDEX)", file=sys.stderr)
+        return 0
+    if total == 0:
+        print("(indice semantico vuoto — esegui 'brain-embed --full' — usa rg+INDEX)", file=sys.stderr)
+        return 0
+
+    where = None
+    if scope == "--conv":
+        where = {"type": {"$eq": "conversation"}}
+    elif scope == "--kb":
+        where = {"type": {"$in": ["wiki", "source"]}}
+
+    qemb = bs.embed(query, vault, task="RETRIEVAL_QUERY")
+    if all(v == 0.0 for v in qemb[:10]):
+        print("(embed query fallito — usa rg+INDEX)", file=sys.stderr)
+        return 0
+    kw = {"query_embeddings": [qemb], "n_results": min(N_RESULTS * 2, total),
+          "include": ["documents", "metadatas", "distances"]}
+    if where:
+        kw["where"] = where
+    try:
+        res = col.query(**kw)
+    except Exception as e:
+        print(f"(query semantica fallita: {e} — usa rg+INDEX)", file=sys.stderr)
+        return 0
+    docs, metas, dists = res["documents"][0], res["metadatas"][0], res["distances"][0]
+    if not docs:
+        print("(nessun hit semantico)", file=sys.stderr)
+        return 0
+
+    freq = bs.wikilink_freq(vault)
+    scored = bs.rerank(docs, metas, dists, freq)[:N_RESULTS]
+    for doc, meta, score in scored:
+        label = meta.get("type", "?").upper()
+        print(f"{label}: {meta.get('file','?')}  (score {score:.2f})")
+        print(doc.strip())
+        print("---")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

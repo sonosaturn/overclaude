@@ -36,6 +36,11 @@ while IFS='|' read -r type name arg; do
     . "$HERE/.env"
     [ -n "${CONTEXT7_API_KEY:-}" ] && arg="$arg --api-key $CONTEXT7_API_KEY" || true
   fi
+  if [ "$name" = "magic" ] && [ -f "$HERE/.env" ]; then
+    # shellcheck disable=SC1090
+    . "$HERE/.env"
+    [ -n "${MAGIC_API_KEY:-}" ] && arg="npx -y @21st-dev/magic@latest API_KEY=$MAGIC_API_KEY" || true
+  fi
   run_component "$type" "$name" "$arg" || log "WARN: $name failed (continuing)"
 done < "$HERE/lib/components.manifest"
 
@@ -83,6 +88,8 @@ if [ "$DRY_RUN" = 1 ]; then
 else
   mkdir -p "$bindir" "$tpl/hooks"
   cp "$HERE/lib/gitnexus-autoreindex.sh" "$bindir/gitnexus-autoreindex.sh"; chmod +x "$bindir/gitnexus-autoreindex.sh"
+  cp "$HERE/lib/graphify-autoregen.sh" "$bindir/graphify-autoregen.sh"; chmod +x "$bindir/graphify-autoregen.sh"
+  cp "$HERE/lib/brain-embed-autoregen.sh" "$bindir/brain-embed-autoregen.sh"; chmod +x "$bindir/brain-embed-autoregen.sh"
   cp "$HERE/git-template/hooks/post-commit" "$tpl/hooks/post-commit"; chmod +x "$tpl/hooks/post-commit"
   git config --global init.templateDir "$tpl"
 fi

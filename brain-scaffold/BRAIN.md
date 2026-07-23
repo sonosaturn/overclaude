@@ -72,3 +72,9 @@ in `~/.config/brain.env`) quando uno esaurisce la quota o è sovraccarico.
 ## Lingua
 Contenuti in italiano salvo che la fonte imponga altro. Termini tecnici in inglese
 quando è la forma standard.
+
+## Recall semantico (embeddings)
+`bin/brain-embed --full` (backfill una volta) indicizza conversations/wiki/sources in ChromaDB
+(`.chroma_db/`, gitignored) con embeddings Gemini. Poi ogni commit aggiorna solo i file cambiati
+(hook post-commit → `brain-embed --changed`). Query: `bin/brain-recall "..."`.
+Dipendenze risolte da `uv` (PEP723 inline negli script). Key in `~/.config/brain.env`.

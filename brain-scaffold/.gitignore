@@ -9,6 +9,9 @@ graphify-out/
 # Marker della sessione conversazioni (volatile)
 conversations/.current-session
 
+# Vettoriale ChromaDB (non versionato)
+.chroma_db/
+
 # Sistema
 .DS_Store
 .trash/
