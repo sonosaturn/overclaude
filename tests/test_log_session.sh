@@ -67,4 +67,20 @@ before="$(cat "$conv")"
 run
 [ "$before" = "$(cat "$conv")" ] || fail "accodamento non idempotente"
 
+# 5. Il marker citato DENTRO il log non rende il file curato: succede davvero, in
+#    ogni sessione in cui si parla del marker le risposte lo riportano verbatim.
+cat > "$conv" <<'MD'
+# Conversazione
+
+<!-- auto-generated: log-session.py -->
+
+## 10:00 — Utente
+primo prompt di prova lungo abbastanza da fare da chiave
+
+## Claude
+- Il marker <!-- curated --> segnala un log scritto dal modello.
+MD
+run
+grep -q 'secondo prompt di prova' "$conv" || fail "marker citato nel corpo scambiato per header"
+
 echo "PASS test_log_session"

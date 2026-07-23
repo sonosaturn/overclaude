@@ -148,6 +148,21 @@ def build(conv_file, turns):
     return "\n".join(out).rstrip() + "\n"
 
 
+def is_curated(text):
+    """Il marker vale solo nell'header, cioe' prima del primo turno.
+
+    Cercarlo in tutto il file lo fa scattare anche quando compare *dentro* il log:
+    basta una sessione in cui si parla del marker perche' le risposte lo citino
+    verbatim, e un log non curato verrebbe scambiato per curato.
+    """
+    for line in text.splitlines():
+        if line.startswith("## "):
+            return False
+        if CURATED_MARKER in line:
+            return True
+    return False
+
+
 def missing_turns(text, turns):
     """Turni non ancora presenti nel file curato.
 
@@ -183,7 +198,7 @@ def main():
     if not turns:
         return 0
 
-    if CURATED_MARKER in existing:
+    if is_curated(existing):
         missing = missing_turns(existing, turns)
         if not missing:
             return 0
