@@ -3,6 +3,11 @@
 > Template OverClaude. Personalizza pure: queste regole abilitano il second-brain
 > `~/brain` e l'uso di Context7. Adattale o rimuovile se non usi il vault.
 
+**Qui vanno solo le regole valide ovunque.** Ciò che riguarda un singolo repo va nel
+`CLAUDE.md` di quel repo: Claude Code carica i file nelle sottocartelle **on demand**,
+quando legge file lì dentro, mentre questo lo paghi a ogni sessione di ogni progetto.
+Tieni questo file sotto le ~200 righe; oltre, l'aderenza cala.
+
 ## Recall automatico delle conversazioni passate (vault ~/brain)
 
 Esiste un second-brain personale in `~/brain` con il log curato di tutte le sessioni
@@ -40,6 +45,10 @@ cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione chiara>"
 `<tipo>` = feat | fix | docs | refactor | chore. Solo il vault: `git add -A` dentro
 `~/brain`, mai `git -C` su altri repo. Niente push automatico (resta manuale).
 
+Stessa regola per gli altri tuoi repo personali, ma **scrivila nel `CLAUDE.md` di ciascuno**
+insieme al path esatto e alle sue convenzioni (trailer AI sì/no, branch, build da verificare
+prima del commit): sono dettagli che servono solo quando lavori lì.
+
 ## Skill / MCP / plugin: attivi e auto-invocabili di DEFAULT
 
 All'installazione di una **skill**, un **MCP** o un **plugin**, configuralo perché sia
@@ -62,6 +71,11 @@ skill non filtrate).
 
 Vedi `~/.claude/rules/context7.md`: usa il MCP Context7 per documentazione aggiornata di
 librerie, framework, SDK, API e CLI quando l'utente fa domande a riguardo.
+
+## Prior art
+
+Vedi `~/.claude/rules/prior-art.md`: prima di costruire da zero una capacità non banale,
+verifica se esiste già una libreria, un repo, un CLI, un MCP o una skill che la copre.
 
 ## GitNexus — code intelligence automatica (ogni repo indicizzato)
 
@@ -100,15 +114,11 @@ grep/read**. Il grep trova stringhe; GitNexus capisce chiamanti, dipendenze e fl
 | Controllo/dato-dipendenze dentro una funzione | `pdg_query(...)` |
 | Query libera sul grafo | `cypher(...)` · Mappa rotte HTTP | `route_map(...)` · Repo indicizzati | `list_repos()` |
 
-**Regole MUST / NEVER** (per i repo di codice indicizzati):
-- **MUST** lanciare `impact` prima di editare un simbolo e **avvisare l'utente** se il rischio è
-  HIGH/CRITICAL prima di procedere.
-- **MUST** lanciare `detect_changes()` prima di un commit per confermare che le modifiche
-  toccano solo lo scope atteso.
-- **NEVER** rinominare con find-and-replace → usa `rename`. **NEVER** ignorare un warning
-  HIGH/CRITICAL di `impact`.
-
-**Risorse MCP:** `gitnexus://repo/{nome}/context` · `/clusters` · `/processes` · `/process/{nome}`.
+**Regole MUST / NEVER e risorse MCP** stanno già nel `CLAUDE.md` di ogni repo indicizzato:
+`gitnexus analyze` ci scrive un blocco fra i marker `<!-- gitnexus:start/end -->` con le regole
+complete e le risorse `gitnexus://repo/<nome>/*` col nome giusto. Non duplicarle qui: si
+caricano da sole quando lavori in quel repo. In sintesi: `impact` prima di editare (avvisa se
+HIGH/CRITICAL), `detect_changes()` prima di committare, `rename` mai find-and-replace.
 
 **Per il resto** (elenco completo dei tool, schema del grafo, workflow) usa le skill
 `gitnexus-guide`, `gitnexus-exploring`, `gitnexus-debugging`, `gitnexus-impact-analysis`,

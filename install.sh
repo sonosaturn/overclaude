@@ -54,7 +54,7 @@ if [ "$DRY_RUN" = 1 ]; then echo "WOULD WRITE ~/.claude/settings.json"; else pri
 if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD COPY CLAUDE.md"; else cp "$HERE/config/CLAUDE.md.template" "$HOME/.claude/CLAUDE.md"; fi
 fi
-[ "$DRY_RUN" = 1 ] || cp "$HERE/config/rules/context7.md" "$HOME/.claude/rules/context7.md"
+[ "$DRY_RUN" = 1 ] || cp "$HERE"/config/rules/*.md "$HOME/.claude/rules/"
 
 # 6. brain scaffold
 if [ ! -d "$HOME/brain" ]; then
