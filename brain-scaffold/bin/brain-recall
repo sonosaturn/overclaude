@@ -7,6 +7,10 @@
 import os
 import sys
 
+# Console Windows in cp1252: i glifi del vault (— ↔ …) la fanno crashare in stampa.
+for _s in (sys.stdout, sys.stderr):
+    _s.reconfigure(encoding="utf-8", errors="replace")
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import brain_semantic as bs
 

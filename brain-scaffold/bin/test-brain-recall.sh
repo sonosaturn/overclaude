@@ -4,6 +4,8 @@
 set -u
 DIR="$(cd "$(dirname "$0")" && pwd)"
 VAULT="$(mktemp -d)"
+# Git Bash: gli script girano su python nativo Windows, che legge /tmp/... come C:\tmp\...
+command -v cygpath >/dev/null 2>&1 && VAULT="$(cygpath -m "$VAULT")"
 export BRAIN_VAULT="$VAULT"
 cleanup() { rm -rf "$VAULT"; }
 trap cleanup EXIT
@@ -49,7 +51,7 @@ Chiave pubblica e privata, RSA, scambio di chiavi, firma digitale. Testo revisio
 EOF2
 ( cd "$VAULT" && git add -A && git commit -qm edit )
 "$DIR/brain-embed" --full >/dev/null 2>&1
-tot="$(cd "$DIR" && uv run --quiet --with chromadb python3 -c "import brain_semantic as bs; print(bs.get_collection('$VAULT').count())" 2>/dev/null)"
+tot="$(cd "$DIR" && uv run --quiet --with chromadb python -c "import brain_semantic as bs; print(bs.get_collection('$VAULT').count())" 2>/dev/null)"
 [ "$tot" = "2" ] || { echo "FAIL: prune, total=$tot (atteso 2)"; exit 1; }
 echo "ok prune"
 
