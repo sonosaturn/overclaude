@@ -7,5 +7,5 @@ fail() { echo "FAIL: $1" >&2; exit 1; }
 m="$(detect_pkg_mgr)"
 case "$m" in pacman|apt-get|dnf|zypper|brew|unknown) : ;; *) fail "bad pkg mgr: $m" ;; esac
 o="$(detect_os)"
-case "$o" in linux|macos|unknown) : ;; *) fail "bad os: $o" ;; esac
+case "$o" in linux|macos|windows|unknown) : ;; *) fail "bad os: $o" ;; esac
 echo "PASS test_detect_os"

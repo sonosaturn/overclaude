@@ -2,10 +2,16 @@
 set -eu
 root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 fail() { echo "FAIL: $1" >&2; exit 1; }
-command -v python3 >/dev/null 2>&1 || fail "python3 required"
+# Su Windows 'python3' è l'alias Microsoft Store: c'è nel PATH ma non esegue nulla.
+# Stesso probe dell'hook (vedi docs/WINDOWS.md).
+PY=""
+for p in python3 python py; do "$p" -c "" >/dev/null 2>&1 && { PY="$p"; break; }; done
+[ -n "$PY" ] || fail "python required"
 
 hook="$root/plugins/overclaude/hooks/log-session.py"
 tmp="$(mktemp -d)"
+# Path MSYS (/tmp/...) letto da un python nativo diventa C:\tmp\...: altra directory.
+command -v cygpath >/dev/null 2>&1 && tmp="$(cygpath -m "$tmp")"
 trap 'rm -rf "$tmp"' EXIT
 mkdir -p "$tmp/brain/conversations"
 
@@ -22,7 +28,9 @@ JSONL
 
 conv="$tmp/brain/conversations/Conv_test.md"
 printf '%s\n' "$conv" > "$tmp/brain/conversations/.current-session"
-run() { printf '{"transcript_path":"%s"}' "$tmp/t.jsonl" | HOME="$tmp" python3 "$hook" >/dev/null; }
+# USERPROFILE oltre a HOME: expanduser("~") su Windows guarda quello, non HOME.
+run() { printf '{"transcript_path":"%s"}' "$tmp/t.jsonl" \
+  | HOME="$tmp" USERPROFILE="$tmp" "$PY" "$hook" >/dev/null; }
 
 # 1. File senza marker: rigenerazione completa, codice strippato, niente tool_result
 #    né righe isMeta scambiate per prompt.

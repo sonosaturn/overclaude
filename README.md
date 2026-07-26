@@ -56,8 +56,14 @@ Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sinte
 | find-skills, skill-creator, handoff | discovery / autoring skill · handoff sessione |
 | brain, conversation-log, context7-mcp (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni + skill companion di context7 |
 | codeburn | tracker locale di token/costo AI (dashboard TUI/web/menubar) — CLI user-run, `codeburn` |
+| rtk | proxy CLI che comprime l'output dei comandi prima del contesto (hook PreToolUse, ~60-90% in meno) |
 
 Tooling user-space installato a parte: `node`, `uv`, `markitdown`, `graphify`.
+
+L'installer scrive anche in `~/.claude`: `CLAUDE.md` (solo se assente), `rules/`, `RTK.md`
+(che il `CLAUDE.md` globale include via `@RTK.md`) e la **statusline** con i badge delle
+modalità perenni — variante `.ps1` su Windows, `.sh` altrove, con il path assoluto scritto
+in `settings.json` al momento dell'install e non cablato nella repo.
 
 > **Exa (web search MCP)** non è nel manifest: è un **connector lato account claude.ai**
 > (`mcp.exa.ai/mcp`), non installabile da uno script locale. Aggiungilo una volta dalle
@@ -92,12 +98,16 @@ Il backup include anche la **auto-memoria** di Claude Code: la posizione live
 la memoria vive dentro il vault, è versionata col suo git e si ripristina insieme ad
 esso. L'installer ricrea il symlink dopo l'overlay (su Windows: usa WSL).
 
-## Caveat Windows
+## Windows
 
-L'hook SessionStart `new-session` esiste in due varianti (`new-session.sh` e
-`new-session.ps1`). Su Windows nativo i SessionStart hook hanno avuto problemi noti in
-Claude Code: se il log conversazioni non parte, esegui Claude Code sotto **WSL** (dove la
-variante `.sh` funziona). Il resto della config è cross-platform.
+La config gira su Windows nativo (Git Bash), ma ci sono trappole che **falliscono in
+silenzio** invece di dare errore: `python3` è un alias del Microsoft Store che non esegue
+nulla, i path `/tmp/...` di Git Bash non sono quelli visti da un python nativo, e la
+console in cp1252 fa crashare qualsiasi stampa di UTF-8. Tutte riprodotte e corrette:
+**[`docs/WINDOWS.md`](docs/WINDOWS.md)**.
+
+Da leggere prima di toccare hook o script del plugin: pubblicare una modifica agli hook
+richiede il bump di versione del plugin, altrimenti l'update è un no-op.
 
 ## Test
 

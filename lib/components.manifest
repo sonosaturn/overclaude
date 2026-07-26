@@ -9,14 +9,19 @@ mcp|context7|npx -y @upstash/context7-mcp
 mcp|playwright|npx @playwright/mcp@latest
 skills-cli|find-skills|vercel-labs/skills
 skills-cli|skill-creator|anthropics/skills
-# mattpocock/skills contiene decine di skill: installarlo intero ne porterebbe una
-# ventina non volute. Pinnate le due usate — sono user-only per design
-# (disable-model-invocation), si lanciano con /handoff e /grill-me.
-skills-cli|handoff|mattpocock/skills
-skills-cli|grill-me|mattpocock/skills
+# mattpocock/skills: pacchetto intero (lug 2026). Prima erano pinnate solo handoff e
+# grill-me; il resto (tdd, research, code-review, qa, obsidian-vault, writing-*, …) si è
+# rivelato utile, e la preferenza è massimo raggio d'azione. Le skill user-only per design
+# (disable-model-invocation) restano tali: si lanciano a mano con /handoff, /grill-me.
+skills-repo|mattpocock-skills|mattpocock/skills
 plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
+# rtk (rtk-ai/rtk, "Rust Token Killer"): proxy CLI che comprime l'output dei comandi prima
+# che entri nel contesto. `rtk init -g --auto-patch` si scrive da sé l'hook PreToolUse in
+# settings.json, quindi il template non lo duplica. Il riferimento a `@RTK.md` nel
+# CLAUDE.md globale vuole `config/RTK.md`, copiato dall'installer.
+cmd|rtk|command -v rtk >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh; rtk init -g --auto-patch
 # --- design/UI skills (review lug 2026) ---
 skills-cli|frontend-design|anthropics/skills
 skills-cli|brandkit|Leonxlnx/taste-skill

@@ -55,6 +55,25 @@ if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD COPY CLAUDE.md"; else cp "$HERE/config/CLAUDE.md.template" "$HOME/.claude/CLAUDE.md"; fi
 fi
 [ "$DRY_RUN" = 1 ] || cp "$HERE"/config/rules/*.md "$HOME/.claude/rules/"
+# RTK.md è incluso via "@RTK.md" dal CLAUDE.md globale: senza il file, la direttiva è morta.
+[ "$DRY_RUN" = 1 ] || cp "$HERE/config/RTK.md" "$HOME/.claude/RTK.md"
+
+# 5b. statusline: badge delle modalità perenni (caveman/ponytail). Lo script sta nella
+#     home, non nella repo, perché il comando in settings.json vuole un path assoluto;
+#     lo scriviamo qui invece che nel template proprio per non cablarlo nella repo.
+if [ "$(detect_os)" = windows ]; then
+  _sl_src="$HERE/config/statusline.ps1"; _sl_dst="$HOME/.claude/statusline.ps1"
+  _sl_cmd="powershell -NoProfile -ExecutionPolicy Bypass -File \"$(cygpath -w "$_sl_dst" 2>/dev/null || echo "$_sl_dst")\""
+else
+  _sl_src="$HERE/config/statusline.sh"; _sl_dst="$HOME/.claude/statusline.sh"
+  _sl_cmd="sh \"$_sl_dst\""
+fi
+if [ "$DRY_RUN" = 1 ]; then echo "WOULD INSTALL $_sl_dst + statusLine in settings.json"
+else
+  cp "$_sl_src" "$_sl_dst"; chmod +x "$_sl_dst" 2>/dev/null || true
+  _st="$HOME/.claude/settings.json"
+  jq --arg c "$_sl_cmd" '.statusLine = {type:"command", command:$c}' "$_st" > "$_st.tmp" && mv "$_st.tmp" "$_st"
+fi
 
 # caveman e ponytail sono modalità perenni: i plugin leggono il livello da questi file
 # di stato, senza i quali restano inattivi. Non sovrascrivo se esistono già: un livello

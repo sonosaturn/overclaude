@@ -29,10 +29,36 @@
     "nano-banana@devon-claude-skills": true
   },
   "extraKnownMarketplaces": {
-    "superpowers-dev": { "source": { "source": "github", "repo": "obra/superpowers" } },
-    "ponytail": { "source": { "source": "github", "repo": "DietrichGebert/ponytail" } },
-    "caveman": { "source": { "source": "github", "repo": "JuliusBrussee/caveman" } },
-    "designer-skills": { "source": { "source": "github", "repo": "Owl-Listener/designer-skills" } },
-    "devon-claude-skills": { "source": { "source": "github", "repo": "devonjones/devon-claude-skills" } }
-  }
+    "superpowers-dev": {
+      "source": {
+        "source": "github",
+        "repo": "obra/superpowers"
+      }
+    },
+    "ponytail": {
+      "source": {
+        "source": "github",
+        "repo": "DietrichGebert/ponytail"
+      }
+    },
+    "caveman": {
+      "source": {
+        "source": "github",
+        "repo": "JuliusBrussee/caveman"
+      }
+    },
+    "designer-skills": {
+      "source": {
+        "source": "github",
+        "repo": "Owl-Listener/designer-skills"
+      }
+    },
+    "devon-claude-skills": {
+      "source": {
+        "source": "github",
+        "repo": "devonjones/devon-claude-skills"
+      }
+    }
+  },
+  "autoUpdatesChannel": "latest"
 }
