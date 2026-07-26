@@ -92,12 +92,16 @@ Il backup include anche la **auto-memoria** di Claude Code: la posizione live
 la memoria vive dentro il vault, è versionata col suo git e si ripristina insieme ad
 esso. L'installer ricrea il symlink dopo l'overlay (su Windows: usa WSL).
 
-## Caveat Windows
+## Windows
 
-L'hook SessionStart `new-session` esiste in due varianti (`new-session.sh` e
-`new-session.ps1`). Su Windows nativo i SessionStart hook hanno avuto problemi noti in
-Claude Code: se il log conversazioni non parte, esegui Claude Code sotto **WSL** (dove la
-variante `.sh` funziona). Il resto della config è cross-platform.
+La config gira su Windows nativo (Git Bash), ma ci sono trappole che **falliscono in
+silenzio** invece di dare errore: `python3` è un alias del Microsoft Store che non esegue
+nulla, i path `/tmp/...` di Git Bash non sono quelli visti da un python nativo, e la
+console in cp1252 fa crashare qualsiasi stampa di UTF-8. Tutte riprodotte e corrette:
+**[`docs/WINDOWS.md`](docs/WINDOWS.md)**.
+
+Da leggere prima di toccare hook o script del plugin: pubblicare una modifica agli hook
+richiede il bump di versione del plugin, altrimenti l'update è un no-op.
 
 ## Test
 

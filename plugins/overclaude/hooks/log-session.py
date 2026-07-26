@@ -50,7 +50,7 @@ def find_transcript(hook):
 def current_conv_file():
     marker = os.path.join(CONV_DIR, ".current-session")
     try:
-        with open(marker) as f:
+        with open(marker, encoding="utf-8") as f:
             path = f.read().strip()
         return path or None
     except Exception:
@@ -71,7 +71,7 @@ def extract_turns(transcript):
     """Lista di turni: {time, user, claude:[testi]}."""
     turns = []
     cur = None
-    for line in open(transcript, encoding="utf-8"):
+    for line in open(transcript, encoding="utf-8", errors="replace"):
         try:
             o = json.loads(line)
         except Exception:
@@ -115,7 +115,7 @@ def extract_turns(transcript):
 def header_lines(conv_file):
     """Riusa l'header esistente (data/ora), altrimenti uno minimo."""
     try:
-        with open(conv_file) as f:
+        with open(conv_file, encoding="utf-8", errors="replace") as f:
             head = []
             for line in f:
                 if line.startswith("## "):
@@ -186,7 +186,7 @@ def main():
     if not conv_file:
         return 0
     try:
-        with open(conv_file, encoding="utf-8") as f:
+        with open(conv_file, encoding="utf-8", errors="replace") as f:
             existing = f.read()
     except FileNotFoundError:
         existing = ""
@@ -213,8 +213,10 @@ def main():
                           "log-session: %d turni non curati accodati al log" % len(missing)}))
         return 0
 
+    # build() rilegge l'header dal file: comporre PRIMA di aprire in "w", che tronca.
+    content = build(conv_file, turns)
     with open(conv_file, "w", encoding="utf-8") as f:
-        f.write(build(conv_file, turns))
+        f.write(content)
     return 0
 
 
