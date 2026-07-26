@@ -56,8 +56,14 @@ Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sinte
 | find-skills, skill-creator, handoff | discovery / autoring skill · handoff sessione |
 | brain, conversation-log, context7-mcp (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni + skill companion di context7 |
 | codeburn | tracker locale di token/costo AI (dashboard TUI/web/menubar) — CLI user-run, `codeburn` |
+| rtk | proxy CLI che comprime l'output dei comandi prima del contesto (hook PreToolUse, ~60-90% in meno) |
 
 Tooling user-space installato a parte: `node`, `uv`, `markitdown`, `graphify`.
+
+L'installer scrive anche in `~/.claude`: `CLAUDE.md` (solo se assente), `rules/`, `RTK.md`
+(che il `CLAUDE.md` globale include via `@RTK.md`) e la **statusline** con i badge delle
+modalità perenni — variante `.ps1` su Windows, `.sh` altrove, con il path assoluto scritto
+in `settings.json` al momento dell'install e non cablato nella repo.
 
 > **Exa (web search MCP)** non è nel manifest: è un **connector lato account claude.ai**
 > (`mcp.exa.ai/mcp`), non installabile da uno script locale. Aggiungilo una volta dalle

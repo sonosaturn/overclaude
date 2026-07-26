@@ -2,7 +2,32 @@
 
 Ultimo aggiornamento: 2026-07-26
 
-## Aggiornamento 2026-07-26 — Windows nativo: tre fallimenti silenziosi
+## Aggiornamento 2026-07-26 (b) — repo in pari con la config live
+
+Passata inversa rispetto al solito: non "installa ciò che manca sulla macchina", ma
+"porta nella repo ciò che la macchina ha in più". Delta trovato e chiuso:
+
+- **`rtk`** (rtk-ai/rtk) era l'unico componente della config live assente dal manifest.
+  Aggiunto come `cmd` idempotente (installa solo se manca, poi `rtk init -g --auto-patch`,
+  che si scrive da sé l'hook `PreToolUse`). Con lui `config/RTK.md`, che il `CLAUDE.md`
+  globale include via `@RTK.md`, copiato in `~/.claude` dall'installer.
+- **Statusline**: `config/statusline.ps1` (+ gemello `statusline.sh` per POSIX) e lo step
+  che lo installa e scrive `statusLine` in `settings.json`. Il path assoluto lo produce
+  l'installer, la repo resta senza path cablati.
+- **`CLAUDE.md.template`**: assorbito il preambolo che viveva solo in locale (Behavioral
+  Guidelines + sezione rtk). 199 righe, al limite delle ~200 dichiarate nel template stesso.
+- `settings.template.json`: `autoUpdatesChannel: latest`.
+- `detect_os` riconosce Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) → `windows`, usato per
+  scegliere la variante di statusline.
+- `install.ps1` allineato sui punti che gli mancavano del tutto: `rules/`, `RTK.md`,
+  `CLAUDE.md` se assente, statusline, flag `.caveman-active`/`.ponytail-active`.
+  **Restano fuori** (lag noto, l'install su questa macchina passa da Git Bash):
+  `~/.config/brain.env`, symlink della auto-memoria, script in `~/.local/bin` e template
+  git per l'auto-reindex.
+- `verify.sh`: check di `rtk`, `RTK.md` e statusline. `test_ps_syntax` ora usa anche
+  `powershell` 5.1 quando manca `pwsh` → i `.ps1` sono validati per la prima volta.
+
+## Aggiornamento 2026-07-26 (a) — Windows nativo: tre fallimenti silenziosi
 
 Sessione di allineamento macchina ↔ repo su Windows 11 + Git Bash. Tutti e tre i bug
 trovati avevano lo stesso profilo: **nessun errore visibile, funzione semplicemente
@@ -79,7 +104,7 @@ Zero path assoluti, zero chiavi, zero symlink, `.env` non tracciato, scaffold co
 schema + placeholder vuoti, `~/.claude/settings.json` viva intatta dopo il dry-run.
 
 ## Follow-up aperti
-- [ ] ⚠️ **`install.ps1` / `verify.ps1`: sintassi NON validata** (manca `pwsh` sulla macchina di build). Testare su Windows reale.
+- [x] ~~⚠️ `install.ps1` / `verify.ps1`: sintassi NON validata~~ — validati il 2026-07-26 su Windows reale: `test_ps_syntax` ripiega su `powershell` 5.1 quando `pwsh` non c'è, e passa. Resta il lag funzionale di `install.ps1` (vedi aggiornamento 26/07 b).
 - [x] ~~Confermare i sottocomandi CLI esatti~~ — verificato con `claude plugin --help` (2026-06-29): `claude plugin marketplace add <source>` e `claude plugin install <plugin>@<marketplace>` sono corretti così come in `lib/run-component.sh`.
 - [x] ~~Caveat Windows hook SessionStart~~ — verificato su Windows 11 nativo (2026-07-26): la variante `.sh` sotto Git Bash **funziona**, il `Conv_*.md` viene creato a ogni avvio. Il fallback WSL resta documentato per installazioni dove i SessionStart nativi non scattano. Caveat reali di Windows raccolti in [`docs/WINDOWS.md`](WINDOWS.md).
 - [x] ~~Nessun git remote~~ — repo pubblica creata e pushata (2026-06-29): https://github.com/sonosaturn/overclaude

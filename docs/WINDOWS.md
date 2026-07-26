@@ -93,9 +93,11 @@ comportamento automatico "non parte", il primo controllo è questo, non il codic
 ## 5. Statusline dei plugin di modalità
 
 I badge `[PONYTAIL]`/`[CAVEMAN]` arrivano dagli script `*-statusline.ps1` dentro la cache
-del plugin, il cui path contiene la versione. `~/.claude/statusline.ps1` li aggrega
-risolvendo il path con un glob, così un bump del plugin non rompe la statusline, ed è
-cablato in `settings.json`:
+del plugin, il cui path contiene la versione. `config/statusline.ps1` li aggrega risolvendo
+il path con un glob, così un bump del plugin non rompe la statusline. L'installer lo copia
+in `~/.claude/statusline.ps1` e scrive il comando in `settings.json` — il path assoluto
+nasce lì, non nella repo. `detect_os` riconosce Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) e
+sceglie la variante `.ps1`; altrove copia `statusline.sh`. Risultato in `settings.json`:
 
 ```json
 "statusLine": {

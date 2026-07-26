@@ -3,6 +3,7 @@ detect_os() {
   case "$(uname -s)" in
     Linux) echo linux ;;
     Darwin) echo macos ;;
+    MINGW*|MSYS*|CYGWIN*) echo windows ;;   # Git Bash / MSYS2: shell POSIX su binari nativi
     *) echo unknown ;;
   esac
 }

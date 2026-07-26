@@ -17,6 +17,11 @@ skills-repo|mattpocock-skills|mattpocock/skills
 plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
+# rtk (rtk-ai/rtk, "Rust Token Killer"): proxy CLI che comprime l'output dei comandi prima
+# che entri nel contesto. `rtk init -g --auto-patch` si scrive da sé l'hook PreToolUse in
+# settings.json, quindi il template non lo duplica. Il riferimento a `@RTK.md` nel
+# CLAUDE.md globale vuole `config/RTK.md`, copiato dall'installer.
+cmd|rtk|command -v rtk >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh; rtk init -g --auto-patch
 # --- design/UI skills (review lug 2026) ---
 skills-cli|frontend-design|anthropics/skills
 skills-cli|brandkit|Leonxlnx/taste-skill

@@ -29,6 +29,28 @@ else {
   foreach ($p in $tmpl.PSObject.Properties) { $base | Add-Member -Force -NotePropertyName $p.Name -NotePropertyValue $p.Value }
   $base | ConvertTo-Json -Depth 20 | Set-Content $settings -Encoding UTF8
 }
+# config in ~/.claude: rules, RTK.md (referenziato da @RTK.md), CLAUDE.md se assente,
+# statusline (path assoluto: sta in home, non nella repo) e flag delle modalita' perenni.
+$claudeDir = Join-Path $HOME '.claude'
+if ($DryRun) { Write-Output "WOULD COPY rules/RTK.md/CLAUDE.md + statusline in $claudeDir" }
+else {
+  New-Item -ItemType Directory -Force -Path (Join-Path $claudeDir 'rules') | Out-Null
+  Copy-Item "$Here/config/rules/*.md" (Join-Path $claudeDir 'rules') -Force
+  Copy-Item "$Here/config/RTK.md" (Join-Path $claudeDir 'RTK.md') -Force
+  $globalMd = Join-Path $claudeDir 'CLAUDE.md'
+  if (-not (Test-Path $globalMd)) { Copy-Item "$Here/config/CLAUDE.md.template" $globalMd }
+  $sl = Join-Path $claudeDir 'statusline.ps1'
+  Copy-Item "$Here/config/statusline.ps1" $sl -Force
+  $s = Get-Content $settings -Raw | ConvertFrom-Json
+  $slValue = [pscustomobject]@{ type = 'command'; command = "powershell -NoProfile -ExecutionPolicy Bypass -File `"$sl`"" }
+  $s | Add-Member -Force -NotePropertyName statusLine -NotePropertyValue $slValue
+  $s | ConvertTo-Json -Depth 20 | Set-Content $settings -Encoding UTF8
+  foreach ($mode in 'caveman', 'ponytail') {
+    $flag = Join-Path $claudeDir ".$mode-active"
+    if (-not (Test-Path $flag)) { Set-Content $flag 'full' -NoNewline -Encoding UTF8 }
+  }
+}
+
 if (-not (Test-Path (Join-Path $HOME 'brain'))) {
   if ($DryRun) { Write-Output "WOULD SCAFFOLD ~/brain" } else { Copy-Item "$Here/brain-scaffold" (Join-Path $HOME 'brain') -Recurse }
 }
