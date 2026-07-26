@@ -1,21 +1,21 @@
 # OverClaude
 
-> **Claude on steroids** — una repo ready-to-go che auto-configura un Claude Code "nudo"
-> in una setup avanzata: plugin di processo, code-intelligence, docs aggiornate, browser
-> automation, prosa terse, design, discovery skill e un second-brain locale.
+> **Claude on steroids** — a ready-to-go repo that turns a bare Claude Code into an
+> advanced setup: process plugins, code intelligence, up-to-date docs, browser
+> automation, terse prose, design, skill discovery and a local second brain.
 
-OverClaude non ri-ospita codice di terze parti: **orchestra** gli installer ufficiali di
-ciascun componente (un solo `lib/components.manifest` da aggiornare) e impacchetta le parti
-proprie (`brain`, `conversation-log`, hook di logging) come un plugin Claude Code servito
-dalla marketplace di questa repo.
+OverClaude does not re-host third-party code: it **orchestrates** the official installers
+of each component (a single `lib/components.manifest` to keep updated) and packages its own
+parts (`brain`, `conversation-log`, the logging hook) as a Claude Code plugin served from
+this repo's own marketplace.
 
 ## Quickstart
 
 ```bash
 git clone https://github.com/<you>/overclaude && cd overclaude
-cp .env.example .env        # opzionale: inserisci le tue chiavi
+cp .env.example .env        # optional: add your keys
 sh install.sh               # Linux / macOS
-sh install.sh --check       # verifica
+sh install.sh --check       # verify
 ```
 
 Windows (PowerShell):
@@ -27,97 +27,98 @@ Copy-Item .env.example .env
 ./install.ps1 -Check
 ```
 
-L'installer è **idempotente**: ri-eseguirlo è sicuro e non distruttivo (il merge di
-`settings.json` preserva le tue impostazioni locali).
+The installer is **idempotent**: re-running it is safe and non-destructive (the
+`settings.json` merge preserves your local settings).
 
-Ogni componente è configurato per essere **auto-invocabile di default** (il modello lo usa
-senza trigger manuale) — tranne ciò che è user-only per design (`disable-model-invocation: true`,
-es. `handoff`/`grill-me`, che si lanciano con `/<nome>`). Dettaglio in
-[`config/CLAUDE.md.template`](config/CLAUDE.md.template).
+Every component is configured to be **model-invocable by default** (the model uses it
+without a manual trigger), except what is user-only by design
+(`disable-model-invocation: true`, such as `handoff`/`grill-me`, which you launch with
+`/<name>`). Details in [`config/CLAUDE.md.template`](config/CLAUDE.md.template).
 
-### Anteprima senza modifiche
+### Preview without changes
 
 ```bash
-sh install.sh --dry-run     # stampa cosa farebbe, senza toccare nulla
+sh install.sh --dry-run     # prints what it would do, touching nothing
 ```
 
-## Cosa installa
+## What it installs
 
-Sorgente unica in [`lib/components.manifest`](lib/components.manifest). In sintesi:
+Single source in [`lib/components.manifest`](lib/components.manifest). In short:
 
-| Componente | Ruolo |
+| Component | Role |
 |---|---|
-| superpowers, ponytail | plugin di processo (brainstorm, TDD, debugging, lazy-mode) |
-| gitnexus | code-intelligence (grafo, impact analysis) + 9 skill + hook + auto-reindex a ogni commit sui repo nuovi (git `init.templateDir`) |
-| context7 (MCP) | documentazione aggiornata di librerie/SDK |
-| playwright (MCP) | automazione browser reale (test E2E, screenshot) |
-| caveman, grill-me | prosa terse · interrogatorio adversariale dei piani |
-| impeccable | design language per UI |
-| find-skills, skill-creator, handoff | discovery / autoring skill · handoff sessione |
-| brain, conversation-log, context7-mcp (plugin proprio) | second-brain `~/brain` + log curato delle conversazioni + skill companion di context7 |
-| codeburn | tracker locale di token/costo AI (dashboard TUI/web/menubar) — CLI user-run, `codeburn` |
-| rtk | proxy CLI che comprime l'output dei comandi prima del contesto (hook PreToolUse, ~60-90% in meno) |
+| superpowers, ponytail | process plugins (brainstorm, TDD, debugging, lazy mode) |
+| gitnexus | code intelligence (graph, impact analysis) + 9 skills + hook + auto-reindex on every commit in new repos (git `init.templateDir`) |
+| context7 (MCP) | up-to-date documentation for libraries and SDKs |
+| playwright (MCP) | real browser automation (E2E tests, screenshots) |
+| caveman, grill-me | terse prose · adversarial interrogation of plans |
+| impeccable | design language for UI |
+| find-skills, skill-creator, handoff | skill discovery and authoring · session handoff |
+| brain, conversation-log, context7-mcp (own plugin) | the `~/brain` second brain + curated conversation log + the context7 companion skill |
+| codeburn | local AI token/cost tracker (TUI/web/menubar dashboard), a user-run CLI: `codeburn` |
+| rtk | CLI proxy that compresses command output before it reaches the context (PreToolUse hook, ~60-90% less) |
 
-Tooling user-space installato a parte: `node`, `uv`, `markitdown`, `graphify`.
+User-space tooling installed separately: `node`, `uv`, `markitdown`, `graphify`.
 
-L'installer scrive anche in `~/.claude`: `CLAUDE.md` (solo se assente), `rules/`, `RTK.md`
-(che il `CLAUDE.md` globale include via `@RTK.md`) e la **statusline** con i badge delle
-modalità perenni — variante `.ps1` su Windows, `.sh` altrove, con il path assoluto scritto
-in `settings.json` al momento dell'install e non cablato nella repo.
+The installer also writes into `~/.claude`: `CLAUDE.md` (only if missing), `rules/`, `RTK.md`
+(which the global `CLAUDE.md` pulls in via `@RTK.md`) and the **statusline** with the badges
+of the always-on modes — the `.ps1` variant on Windows, `.sh` elsewhere, with the absolute
+path written into `settings.json` at install time rather than hardcoded in the repo.
 
-> **Exa (web search MCP)** non è nel manifest: è un **connector lato account claude.ai**
-> (`mcp.exa.ai/mcp`), non installabile da uno script locale. Aggiungilo una volta dalle
-> impostazioni del tuo account Claude, non per-macchina.
+> **Exa (web search MCP)** is not in the manifest: it is an **account-side connector on
+> claude.ai** (`mcp.exa.ai/mcp`), not something a local script can install. Add it once from
+> your Claude account settings, not per machine.
 
-## Segreti
+## Secrets
 
-Nessuna chiave nella repo. Copia `.env.example` → `.env` (gitignorato) e inserisci le tue:
+No keys in the repo. Copy `.env.example` to `.env` (gitignored) and fill in your own:
 
-- `CONTEXT7_API_KEY` — opzionale (context7 ha un free tier).
-- `GEMINI_API_KEY` + `GRAPHIFY_GEMINI_MODEL(S)` — per il grafo `graphify` del vault.
-- `MAGIC_API_KEY` — per l'MCP `magic` (componenti UI 21st.dev).
+- `CONTEXT7_API_KEY` — optional (context7 has a free tier).
+- `GEMINI_API_KEY` + `GRAPHIFY_GEMINI_MODEL(S)` — for the vault's `graphify` graph.
+- `MAGIC_API_KEY` — for the `magic` MCP (21st.dev UI components).
 
-I segreti **runtime** stanno invece in `~/.config/brain.env`, fuori da qualsiasi repo:
-`install.sh` lo crea a `600` se manca. Mai chiavi in `~/.claude/settings.json`.
+**Runtime** secrets live in `~/.config/brain.env` instead, outside any repo: `install.sh`
+creates it with mode `600` if missing. Never put keys in `~/.claude/settings.json`.
 
-Dove prenderle e come verificarle, un passo alla volta: **[`docs/MANUAL-STEPS.md`](docs/MANUAL-STEPS.md)**
-— copre anche il connector Exa e la key Groq della skill `watch`.
+Where to get them and how to verify them, one step at a time:
+**[`docs/MANUAL-STEPS.md`](docs/MANUAL-STEPS.md)**, which also covers the Exa connector and
+the Groq key for the `watch` skill.
 
-## Layer personale (opzionale)
+## Personal layer (optional)
 
-La repo pubblica shippa solo uno **scaffold vuoto** del vault (`brain-scaffold/`). Per
-ripristinare i TUOI dati (`~/brain`: conversazioni, wiki, memoria) su un nuovo dispositivo,
-tienili in una repo/backup privati e sovrapponili:
+The public repo ships only an **empty scaffold** of the vault (`brain-scaffold/`). To
+restore YOUR data (`~/brain`: conversations, wiki, memory) on a new device, keep it in a
+private repo or backup and overlay it:
 
 ```bash
-sh install.sh --personal=/percorso/al/tuo/backup-brain
+sh install.sh --personal=/path/to/your/brain-backup
 ```
 
-Il backup include anche la **auto-memoria** di Claude Code: la posizione live
-(`~/.claude/projects/<home>/memory/`) è un symlink a `~/brain/claude-memory/`, così
-la memoria vive dentro il vault, è versionata col suo git e si ripristina insieme ad
-esso. L'installer ricrea il symlink dopo l'overlay (su Windows: usa WSL).
+The backup also covers Claude Code's **auto-memory**: the live location
+(`~/.claude/projects/<home>/memory/`) is a symlink to `~/brain/claude-memory/`, so memory
+lives inside the vault, is versioned with its git and is restored along with it. The
+installer recreates the symlink after the overlay (on Windows: use WSL).
 
 ## Windows
 
-La config gira su Windows nativo (Git Bash), ma ci sono trappole che **falliscono in
-silenzio** invece di dare errore: `python3` è un alias del Microsoft Store che non esegue
-nulla, i path `/tmp/...` di Git Bash non sono quelli visti da un python nativo, e la
-console in cp1252 fa crashare qualsiasi stampa di UTF-8. Tutte riprodotte e corrette:
+The config runs on native Windows (Git Bash), but there are traps that **fail silently**
+instead of raising an error: `python3` is a Microsoft Store alias that executes nothing,
+Git Bash `/tmp/...` paths are not the ones a native python sees, and a cp1252 console
+crashes on any UTF-8 output. All reproduced and fixed:
 **[`docs/WINDOWS.md`](docs/WINDOWS.md)**.
 
-Da leggere prima di toccare hook o script del plugin: pubblicare una modifica agli hook
-richiede il bump di versione del plugin, altrimenti l'update è un no-op.
+Read it before touching plugin hooks or scripts: publishing a change to the hooks requires
+bumping the plugin version, otherwise the update is a no-op.
 
-## Test
+## Tests
 
 ```bash
 sh tests/run.sh
 ```
 
-Test in shell puro (nessun framework). La validazione di sintassi dei `.ps1` richiede `pwsh`
-(altrimenti viene saltata con `SKIP`).
+Pure shell tests (no framework). Syntax validation of the `.ps1` files needs `pwsh`
+(otherwise it is skipped with `SKIP`).
 
-## Stato del progetto
+## Project status
 
-Vedi [`docs/STATUS.md`](docs/STATUS.md) — task completati, follow-up aperti, note operative.
+See [`docs/STATUS.md`](docs/STATUS.md): completed tasks, open follow-ups, operational notes.
