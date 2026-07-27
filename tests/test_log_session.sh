@@ -37,7 +37,7 @@ run() { printf '{"transcript_path":"%s"}' "$tmp/t.jsonl" \
 : > "$conv"
 run
 grep -q 'first test prompt' "$conv"       || fail "turn 1 missing"
-grep -q 'second test prompt' "$conv" || fail "turno 2 assente"
+grep -q 'second test prompt' "$conv" || fail "turn 2 missing"
 grep -q 'codice omesso' "$conv"           || fail "code block not stripped"
 ! grep -q 'system injection' "$conv"  || fail "isMeta line treated as a prompt"
 ! grep -q 'tool_result' "$conv"           || fail "tool_result treated as a prompt"
