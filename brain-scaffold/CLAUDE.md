@@ -1,32 +1,32 @@
-# Contesto progetto — vault brain
+# Project context — brain vault
 
-Second-brain personale, pattern LLM-wiki. Struttura e convenzioni: `README.md` e `BRAIN.md`.
+Personal second brain, LLM-wiki pattern. Structure and conventions: `README.md` and `BRAIN.md`.
 
-- `conversations/` — una "fotografia" markdown per sessione + `INDEX.md` (TOC). Le scrivono
-  l'hook `SessionStart` del plugin overclaude e la skill `overclaude:conversation-log`:
-  prompt utente **verbatim**, risposte **riassunte senza blocchi di codice**, sovrascrivendo
-  il file della sessione corrente a ogni turno.
-- `wiki/` — pagine markdown con cross-reference `[[...]]` per Obsidian.
-- `claude-memory/` — auto-memory di Claude Code, symlinkata qui dall'installer.
-- `bin/brain-recall` — recall semantico; fail-open su `rg` + `INDEX.md` se manca la key.
+- `conversations/` — one markdown "snapshot" per session + `INDEX.md` (TOC). Written by the
+  overclaude plugin's `SessionStart` hook and by the `overclaude:conversation-log` skill:
+  user prompts **verbatim**, answers **summarised without code blocks**, overwriting the
+  current session's file on every turn.
+- `wiki/` — markdown pages with `[[...]]` cross-references for Obsidian.
+- `claude-memory/` — Claude Code's auto-memory, symlinked here by the installer.
+- `bin/brain-recall` — semantic recall; fails open to `rg` + `INDEX.md` if the key is missing.
 
-Ingest, query e lint del vault: skill `overclaude:brain`. Il **trigger** di recall dalle
-altre sessioni sta nel `CLAUDE.md` globale, non qui: deve scattare da qualunque cartella.
+Ingest, query and lint of the vault: the `overclaude:brain` skill. The recall **trigger** for
+other sessions lives in the global `CLAUDE.md`, not here: it must fire from any folder.
 
-## Commit automatico
+## Automatic commits
 
-**Committa automaticamente, senza chiedere conferma**, a ogni unità di lavoro conclusa nel
-vault: ingest completato, set di pagine wiki, fix di uno script, lint applicato.
-**Non a ogni turno e non a lavoro a metà — una milestone = un commit.**
+**Commit automatically, without asking for confirmation**, at every unit of work finished in
+the vault: an ingest completed, a set of wiki pages, a script fix, a lint pass applied.
+**Not every turn and never mid-work — one milestone = one commit.**
 
 ```
-cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione chiara>"
+cd ~/brain && git add -A && git commit -m "<type>: <clear description>"
 ```
 
-`<tipo>` = feat | fix | docs | refactor | chore. Solo il vault, mai `git -C` su altri repo.
-**Niente push automatico.**
+`<type>` = feat | fix | docs | refactor | chore. The vault only, never `git -C` into other
+repos. **No automatic push.**
 
-## Cosa non entra nel vault
+## What does not belong in the vault
 
-Chiavi API e segreti: stanno in `~/.config/brain.env`, che è fuori da qualsiasi repo.
-Il vault è versionato, quindi tutto ciò che ci scrivi va considerato permanente.
+API keys and secrets: they live in `~/.config/brain.env`, which is outside any repo.
+The vault is versioned, so treat anything you write into it as permanent.

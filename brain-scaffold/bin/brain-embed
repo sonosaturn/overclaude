@@ -3,8 +3,8 @@
 # requires-python = ">=3.11"
 # dependencies = ["chromadb>=1.0.0", "google-genai>=0.1.0", "httpx"]
 # ///
-"""Indicizza i .md del vault in ChromaDB. Incrementale per chunk-hash.
---changed (default): solo i file toccati dall'ultimo commit. --full: tutto il vault."""
+"""Indexes the vault's .md files into ChromaDB. Incremental by chunk hash.
+--changed (default): only the files touched by the last commit. --full: the whole vault."""
 import os
 import sys
 import subprocess
@@ -38,7 +38,7 @@ def _all_files(vault: str) -> list[str]:
 
 
 def _project_of(vault: str, relpath: str) -> str:
-    """Estrae il primo [[wikilink]] della riga **Collegamenti:** (se conversazione)."""
+    """Extracts the first [[wikilink]] of the **Collegamenti:** line (for conversations)."""
     import re
     try:
         for line in Path(os.path.join(vault, relpath)).read_text(encoding="utf-8").splitlines():
@@ -74,7 +74,7 @@ def main():
         col = bs.get_collection(vault)
         existing = set(col.get()["ids"])
     except Exception as e:
-        print(f"ChromaDB non disponibile: {e} — skip indexing", file=sys.stderr)
+        print(f"ChromaDB unavailable: {e} — skip indexing", file=sys.stderr)
         return 0
 
     import time
@@ -99,25 +99,25 @@ def main():
                 print(f"prune stale fallito ({rel}): {e}", file=sys.stderr)
         for i, chunk in enumerate(bs.chunks(content)):
             if bs.is_quota_exhausted(vault):
-                print("quota esaurita durante indexing — stop", file=sys.stderr)
-                print(f"brain-embed: +{added} chunk (quota)", file=sys.stderr)
+                print("quota exhausted during indexing — stop", file=sys.stderr)
+                print(f"brain-embed: +{added} chunks (quota)", file=sys.stderr)
                 return 0
             did = bs.doc_id(rel, i, fhash)
             if did in existing:
                 continue
             emb = bs.embed(chunk, vault, task="RETRIEVAL_DOCUMENT")
             if all(v == 0.0 for v in emb[:10]):
-                continue  # embed fallito: non scrivo zero-vector, ritento al prossimo commit
+                continue  # embedding failed: do not store a zero vector, retry on the next commit
             try:
                 col.add(ids=[did], embeddings=[emb], documents=[chunk],
                         metadatas=[{"file": os.path.basename(rel), "path": rel,
                                     "type": dtype, "chunk": i, "project": project}])
             except Exception as e:
-                print(f"chroma add fallito ({rel} #{i}): {e}", file=sys.stderr)
+                print(f"chroma add failed ({rel} #{i}): {e}", file=sys.stderr)
                 continue
             added += 1
             time.sleep(EMBED_DELAY)
-    print(f"brain-embed: +{added} chunk (totale {col.count()})", file=sys.stderr)
+    print(f"brain-embed: +{added} chunks (total {col.count()})", file=sys.stderr)
     return 0
 
 

@@ -1,22 +1,22 @@
-# Indice conversazioni
+# Conversation index
 
-> TOC curato del vault conversazioni. Una riga per sessione: file · data · temi · progetti.
-> Aggiornato dalla skill `overclaude:conversation-log` a fine sessione. Per il recall, leggere
-> questo file per primo, poi aprire solo i `Conv_*.md` rilevanti.
+> Curated TOC of the conversation vault. One line per session: file · date · themes · projects.
+> Updated by the `overclaude:conversation-log` skill at the end of a session. For recall, read
+> this file first, then open only the relevant `Conv_*.md`.
 
-Il formato di ogni riga, da rispettare così com'è (è ciò che rende il recall economico:
-si legge solo questo file finché non si sa quale sessione aprire):
+The format of each line, to be kept exactly as is (it is what makes recall cheap: you only
+read this file until you know which session to open):
 
 ```
-- [Conv_GG-MM-AA_HH-MM](Conv_GG-MM-AA_HH-MM.md) — GG/MM HH:MM · tema uno; tema due; decisione presa · *progetti:* [[nome-progetto]]
+- [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · theme one; theme two; decision taken · *progetti:* [[project-name]]
 ```
 
-Regole:
+Rules:
 
-- **Temi**: cosa si è deciso o costruito, non cosa si è detto. Separati da `;`.
-- **Progetti**: wikilink `[[...]]`, così Obsidian collega l'indice alle pagine della wiki.
-- Una riga per sessione, in ordine cronologico. Non riscrivere le righe passate.
-- Se una sessione non ha prodotto niente di richiamabile, non aggiungerla: un indice
-  gonfio costa a ogni recall.
+- **Themes**: what was decided or built, not what was said. Separated by `;`.
+- **Projects**: `[[...]]` wikilinks, so Obsidian connects the index to the wiki pages.
+- One line per session, in chronological order. Do not rewrite past lines.
+- If a session produced nothing worth recalling, do not add it: a bloated index costs on
+  every recall.
 
-<!-- Le sessioni iniziano qui sotto. -->
+<!-- Sessions start below. -->

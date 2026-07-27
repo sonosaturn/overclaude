@@ -30,15 +30,15 @@ def test_wikilink_freq(tmp_path=None):
     assert freq["ricing-hyprland"] == 1
 
 def test_rerank_blends_similarity_and_graph():
-    # doc A: sim alta (dist 0.1) ma freq 0; doc B: sim media (dist 0.4) ma freq alta
+    # doc A: high sim (dist 0.1) but freq 0; doc B: medium sim (dist 0.4) but high freq
     docs = ["A", "B"]
     metas = [{"file": "A.md"}, {"file": "B.md"}]
     dists = [0.1, 0.4]
     freq = {"A.md": 0, "B.md": 50}
     scored = bs.rerank(docs, metas, dists, freq, w_graph=0.3)
-    # A resta primo (0.7*0.9=0.63 > B 0.7*0.6+0.3*1.0=0.72)? verifichiamo il calcolo reale
+    # does A stay first (0.7*0.9=0.63 > B 0.7*0.6+0.3*1.0=0.72)? check the real arithmetic
     order = [m["file"] for _, m, _ in scored]
-    # B ha graph_weight massimo → 0.42+0.3=0.72 > A 0.63 → B primo
+    # B has the max graph_weight: 0.42+0.3=0.72 > A 0.63, so B comes first
     assert order[0] == "B.md"
 
 def test_quota_sentinel_roundtrip():
@@ -48,7 +48,7 @@ def test_quota_sentinel_roundtrip():
     assert bs.is_quota_exhausted(d) is False
     bs._write_quota_sentinel(d)
     assert bs.is_quota_exhausted(d) is True
-    # sentinel con data vecchia = non attivo
+    # a sentinel with an old date = not active
     p = bs._quota_sentinel(d)
     with open(p, "w") as f:
         f.write("2000-01-01")

@@ -1,45 +1,45 @@
 # brain — second brain / knowledge base
 
-Knowledge base personale in markdown, mantenuta dall'LLM (pattern *LLM-wiki*).
-Vault Obsidian + ingest documenti via **markitdown** + grafo via **graphify**.
+Personal markdown knowledge base, maintained by the LLM (*LLM-wiki* pattern).
+Obsidian vault + document ingest via **markitdown** + graph via **graphify**.
 
-## Le cartelle
+## The folders
 
-| Cartella | Cosa contiene |
+| Folder | What it holds |
 |---|---|
-| `sources/` | Fonti grezze, immutabili. Ciò che ingerisci finisce qui e non si tocca più. |
-| `wiki/` | Pagine generate: entità, sintesi, cross-reference `[[...]]`. Qui si scrive. |
-| `conversations/` | Una "fotografia" markdown per sessione + `INDEX.md`, il TOC su cui si regge il recall. |
-| `claude-memory/` | Auto-memory di Claude Code, symlinkata qui dall'installer per essere versionata. |
-| `bin/` | Tooling del vault: `brain-recall` (recall semantico), `brain-embed`, `graphify-run.sh`. |
-| `graphify-out/` | Output del grafo. Rigenerabile, quindi non versionato. |
+| `sources/` | Raw, immutable sources. What you ingest lands here and is never touched again. |
+| `wiki/` | Generated pages: entities, summaries, `[[...]]` cross-references. This is where you write. |
+| `conversations/` | One markdown "snapshot" per session + `INDEX.md`, the TOC recall leans on. |
+| `claude-memory/` | Claude Code's auto-memory, symlinked here by the installer so it gets versioned. |
+| `bin/` | Vault tooling: `brain-recall` (semantic recall), `brain-embed`, `graphify-run.sh`. |
+| `graphify-out/` | Graph output. Regenerable, so not versioned. |
 
-`BRAIN.md` descrive schema e workflow: leggerlo prima di scrivere nel vault.
+`BRAIN.md` describes the schema and the workflows: read it before writing into the vault.
 
-## Uso con Claude Code
+## Use with Claude Code
 
-La skill `overclaude:brain` implementa i flussi:
+The `overclaude:brain` skill implements the flows:
 
-- "ingerisci `<file>` nella KB" → INGEST
-- "cosa so su `<X>`?" → QUERY
-- "fai il lint della KB" → LINT
+- "ingest `<file>` into the KB" → INGEST
+- "what do I know about `<X>`?" → QUERY
+- "lint the KB" → LINT
 
-Il log delle conversazioni lo tiene `overclaude:conversation-log`, attivata dall'hook
-`SessionStart` del plugin, che crea il file della sessione e ne scrive il percorso in
+The conversation log is kept by `overclaude:conversation-log`, activated by the plugin's
+`SessionStart` hook, which creates the session file and writes its path into
 `conversations/.current-session`.
 
-## Aprire in Obsidian
+## Opening it in Obsidian
 
-*Open folder as vault* → questa cartella. La configurazione in `.obsidian/` è già inclusa
-(tema, plugin core, impostazioni della graph view), quindi il vault è utilizzabile senza
-setup: la graph view mostra i `[[wikilink]]` fra le pagine e fra le conversazioni.
+*Open folder as vault* → this folder. The configuration in `.obsidian/` is already included
+(theme, core plugins, graph view settings), so the vault is usable with no setup: the graph
+view shows the `[[wikilinks]]` between pages and between conversations.
 
-`workspace.json` non è versionato di proposito: è lo stato dei pannelli aperti, cambia a
-ogni uso e vale solo per la macchina su cui è stato scritto.
+`workspace.json` is deliberately not versioned: it is the state of the open panes, it changes
+on every use and only makes sense on the machine that wrote it.
 
-## Recall semantico
+## Semantic recall
 
-`bin/brain-recall "<query>"` cerca per significato, non per stringa, e serve alle
-parafrasi che `rg` non prende. Richiede `GEMINI_API_KEY` in `~/.config/brain.env`
-(mai in `settings.json`: quel file vive dentro un repo). Senza chiave o senza indice
-degrada su `rg` + `INDEX.md` invece di fallire.
+`bin/brain-recall "<query>"` searches by meaning, not by string, and covers the paraphrases
+`rg` misses. It needs `GEMINI_API_KEY` in `~/.config/brain.env` (never in `settings.json`:
+that file lives inside a repo). Without a key or without an index it degrades to `rg` +
+`INDEX.md` instead of failing.

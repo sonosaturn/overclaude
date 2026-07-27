@@ -1,12 +1,11 @@
 <!--
-Questa cartella è la auto-memory di Claude Code, tenuta dentro il vault così da essere
-versionata insieme al resto. L'installer sostituisce
-~/.claude/projects/<chiave>/memory con un symlink a questa directory: la sorgente unica
-sta qui, non nella config.
+This folder is Claude Code's auto-memory, kept inside the vault so it gets versioned with
+everything else. The installer replaces ~/.claude/projects/<key>/memory with a symlink to
+this directory: the single source lives here, not in the config.
 
-MEMORY.md è l'indice, ed è l'unico file caricato a ogni sessione (primi 200 righe o
-25KB). I fatti veri stanno nei file accanto, uno per fatto, letti su richiesta.
-Tienilo a una riga per voce: quando cresce, il taglio avviene in silenzio.
+MEMORY.md is the index, and it is the only file loaded on every session (first 200 lines or
+25KB). The actual facts live in the files next to it, one per fact, read on demand.
+Keep it to one line per entry: when it grows, the truncation happens silently.
 -->
 
-- <!-- [Titolo](nome-file.md) — gancio in una riga: perché serve saperlo -->
+- <!-- [Title](file-name.md) — one-line hook: why this is worth knowing -->

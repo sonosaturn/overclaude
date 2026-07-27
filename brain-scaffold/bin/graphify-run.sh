@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
-# graphify con fallback automatico tra modelli Gemini.
-# Parte dal primo modello di GRAPHIFY_GEMINI_MODELS; se quello esaurisce la quota
-# giornaliera (429 / RESOURCE_EXHAUSTED), passa automaticamente al successivo.
+# graphify with automatic fallback across Gemini models.
+# Starts from the first model in GRAPHIFY_GEMINI_MODELS; if that one runs out of its daily
+# quota (429 / RESOURCE_EXHAUSTED), it moves to the next one automatically.
 #
-# Uso:  ~/brain/bin/graphify-run.sh [percorso]   (default: cartella corrente)
+# Usage:  ~/brain/bin/graphify-run.sh [path]   (default: current folder)
 set -uo pipefail
 
-# Lista modelli (override via env GRAPHIFY_GEMINI_MODELS). Default = i 3 modelli dell'utente.
+# Model list (override via the GRAPHIFY_GEMINI_MODELS env var). Default = the user's 3 models.
 read -r -a MODELS <<< "${GRAPHIFY_GEMINI_MODELS:-gemini-3.5-flash gemini-3-flash-preview gemini-3.1-flash-lite}"
 target="${1:-.}"
 
 if [ -z "${GEMINI_API_KEY:-}" ]; then
-  echo "[graphify-run] GEMINI_API_KEY non impostata. Mettila in ~/.config/brain.env e apri una nuova shell." >&2
+  echo "[graphify-run] GEMINI_API_KEY is not set. Put it in ~/.config/brain.env and open a new shell." >&2
   exit 2
 fi
 
@@ -19,23 +19,23 @@ log="$(mktemp)"
 trap 'rm -f "$log"' EXIT
 
 for m in "${MODELS[@]}"; do
-  echo "[graphify-run] modello: $m"
+  echo "[graphify-run] model: $m"
   GRAPHIFY_GEMINI_MODEL="$m" graphify "$target" 2>&1 | tee "$log"
   rc=${PIPESTATUS[0]}
 
   if [ "$rc" -eq 0 ]; then
-    echo "[graphify-run] completato con $m"
+    echo "[graphify-run] completed with $m"
     exit 0
   fi
 
   if grep -qiE '429|resource_exhausted|quota|exhaust|rate.?limit|too many requests|503|unavailable|overloaded|high.demand' "$log"; then
-    echo "[graphify-run] $m non disponibile (quota esaurita o sovraccarico) → provo il prossimo modello"
+    echo "[graphify-run] $m unavailable (quota exhausted or overloaded), trying the next model"
     continue
   fi
 
-  echo "[graphify-run] errore non legato alla quota (rc=$rc) su $m: mi fermo." >&2
+  echo "[graphify-run] error unrelated to quota (rc=$rc) on $m: stopping." >&2
   exit "$rc"
 done
 
-echo "[graphify-run] tutti i modelli hanno esaurito la quota giornaliera. Riprova domani." >&2
+echo "[graphify-run] every model has exhausted its daily quota. Try again tomorrow." >&2
 exit 1

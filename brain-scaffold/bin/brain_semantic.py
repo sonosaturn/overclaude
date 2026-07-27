@@ -1,6 +1,6 @@
-"""Shared helpers per il recall semantico del vault ~/brain.
-Importato da brain-embed e brain-recall. Non eseguito direttamente
-(le deps runtime — chromadb/google-genai/httpx — le dichiarano i CLI via PEP723)."""
+"""Shared helpers for the semantic recall of the ~/brain vault.
+Imported by brain-embed and brain-recall. Never run directly
+(the runtime deps — chromadb/google-genai/httpx — are declared by the CLIs via PEP723)."""
 import hashlib
 import math
 import os
@@ -154,7 +154,7 @@ def is_quota_exhausted(vault: str) -> bool:
 
 
 def embed(text: str, vault: str, task: str = "RETRIEVAL_DOCUMENT", _retry: int = 0) -> list[float]:
-    """Zero-vector se quota esaurita, no-key, o errore. Backoff 30/60/120 su 429."""
+    """Zero vector on exhausted quota, missing key, or error. Backoff 30/60/120 on 429."""
     global _consecutive_failures
     if is_quota_exhausted(vault):
         return [0.0] * EMBED_DIM

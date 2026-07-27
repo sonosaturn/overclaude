@@ -3,11 +3,11 @@
 # requires-python = ">=3.11"
 # dependencies = ["chromadb>=1.0.0", "google-genai>=0.1.0", "httpx"]
 # ///
-"""Recall semantico: embedda la query, cerca in ChromaDB, rerank sui wikilink, stampa top-N."""
+"""Semantic recall: embed the query, search ChromaDB, rerank on wikilinks, print the top N."""
 import os
 import sys
 
-# Console Windows in cp1252: i glifi del vault (— ↔ …) la fanno crashare in stampa.
+# Windows console in cp1252: the vault glyphs (— ↔ …) crash it on print.
 for _s in (sys.stdout, sys.stderr):
     _s.reconfigure(encoding="utf-8", errors="replace")
 
@@ -26,21 +26,21 @@ def main():
             args.remove(a)
     query = " ".join(args).strip()
     if not query:
-        print("uso: brain-recall \"query\" [--conv|--kb|--all]", file=sys.stderr)
+        print("usage: brain-recall \"query\" [--conv|--kb|--all]", file=sys.stderr)
         return 2
 
     vault = bs.vault_root()
     if not bs.load_key():
-        print("(recall semantico non disponibile: GEMINI_API_KEY assente — usa rg+INDEX)", file=sys.stderr)
+        print("(semantic recall unavailable: GEMINI_API_KEY missing — use rg+INDEX)", file=sys.stderr)
         return 0
     try:
         col = bs.get_collection(vault)
         total = col.count()
     except Exception as e:
-        print(f"(ChromaDB non disponibile: {e} — usa rg+INDEX)", file=sys.stderr)
+        print(f"(ChromaDB unavailable: {e} — use rg+INDEX)", file=sys.stderr)
         return 0
     if total == 0:
-        print("(indice semantico vuoto — esegui 'brain-embed --full' — usa rg+INDEX)", file=sys.stderr)
+        print("(semantic index empty — run 'brain-embed --full' — use rg+INDEX)", file=sys.stderr)
         return 0
 
     where = None
@@ -51,7 +51,7 @@ def main():
 
     qemb = bs.embed(query, vault, task="RETRIEVAL_QUERY")
     if all(v == 0.0 for v in qemb[:10]):
-        print("(embed query fallito — usa rg+INDEX)", file=sys.stderr)
+        print("(query embedding failed — use rg+INDEX)", file=sys.stderr)
         return 0
     kw = {"query_embeddings": [qemb], "n_results": min(N_RESULTS * 2, total),
           "include": ["documents", "metadatas", "distances"]}
@@ -60,11 +60,11 @@ def main():
     try:
         res = col.query(**kw)
     except Exception as e:
-        print(f"(query semantica fallita: {e} — usa rg+INDEX)", file=sys.stderr)
+        print(f"(semantic query failed: {e} — use rg+INDEX)", file=sys.stderr)
         return 0
     docs, metas, dists = res["documents"][0], res["metadatas"][0], res["distances"][0]
     if not docs:
-        print("(nessun hit semantico)", file=sys.stderr)
+        print("(no semantic hits)", file=sys.stderr)
         return 0
 
     freq = bs.wikilink_freq(vault)
