@@ -1,67 +1,67 @@
 ---
 name: conversation-log
 description: >-
-  Mantiene il log curato delle conversazioni in ~/brain/conversations (stile AutoBrain).
-  Attivata automaticamente a ogni sessione dall'hook SessionStart, che crea il file e ne
-  scrive il percorso in ~/brain/conversations/.current-session. Regole: salvare i prompt
-  dell'utente VERBATIM e RIASSUMERE le risposte di Claude SENZA blocchi di codice,
-  sovrascrivendo il file della sessione corrente a ogni turno.
+  Keeps the curated conversation log in ~/brain/conversations (AutoBrain style). Activated
+  automatically on every session by the SessionStart hook, which creates the file and writes
+  its path to ~/brain/conversations/.current-session. Rules: store the user's prompts
+  VERBATIM and SUMMARISE Claude's answers WITHOUT code blocks, overwriting the current
+  session's file on every turn.
 ---
 
 # Skill: conversation-log
 
-Registra le conversazioni nel vault, una "fotografia" aggiornata a ogni turno.
+Records conversations in the vault, a "snapshot" refreshed on every turn.
 
-## File attivo
-Il percorso del file della sessione corrente è in `~/brain/conversations/.current-session`
-(lo crea l'hook SessionStart). **Leggere quel file** per sapere quale `Conv_*.md` aggiornare.
-Se manca (es. prima sessione prima dell'hook), crearne uno: `Conv_<DD-MM-YY_HH-MM>.md`
-con l'ora di inizio sessione, e scrivere il percorso nel marker.
+## Active file
+The path of the current session's file is in `~/brain/conversations/.current-session`
+(the SessionStart hook creates it). **Read that file** to know which `Conv_*.md` to update.
+If it is missing (e.g. a first session before the hook), create one: `Conv_<DD-MM-YY_HH-MM>.md`
+with the session start time, and write the path into the marker file.
 
-## Quando aggiornare
-A **ogni turno** (dopo aver risposto), **sovrascrivere** il file attivo con il log
-aggiornato dall'inizio della sessione fino a ora. Stesso file per tutta la sessione;
-un **nuovo file** nasce solo a una nuova sessione (lo fa l'hook).
+## When to update
+On **every turn** (after answering), **overwrite** the active file with the log updated from
+the start of the session to now. Same file for the whole session; a **new file** is only born
+with a new session (the hook does that).
 
-## Marker `<!-- curated -->` (IMPORTANTE)
-Quando scrivi il log seguendo questa skill, includi **sempre** la riga
-`<!-- curated -->` subito dopo l'header (vedi Formato). È il segnale che il file è
-curato dal modello.
+## The `<!-- curated -->` marker (IMPORTANT)
+When you write the log following this skill, **always** include the line `<!-- curated -->`
+right after the header (see Format). It is the signal that the file is curated by the model.
 
-Un **hook `Stop`** (`log-session.py`, incluso nel plugin) fa da paracadute deterministico,
-a ogni fine turno:
+A **`Stop` hook** (`log-session.py`, shipped with the plugin) acts as a deterministic
+parachute at the end of every turn:
 
-- **Senza marker** → rigenera l'intero file dal transcript `.jsonl`: prompt verbatim,
-  risposte col codice strippato. Il log non è mai vuoto.
-- **Con marker, ma con turni mancanti** → non riscrive niente di ciò che hai curato:
-  accoda in coda solo i turni che nel file non ci sono, sotto un separatore che li
-  segnala come automatici. Copre il caso in cui curi i primi turni e poi salti.
-- **Con marker e tutti i turni presenti** → non tocca nulla. La tua versione vince.
+- **No marker** → regenerates the whole file from the `.jsonl` transcript: prompts verbatim,
+  answers with code stripped. The log is never empty.
+- **Marker present, but turns missing** → it rewrites nothing you curated: it only appends
+  the turns that are not in the file, under a separator that flags them as automatic. Covers
+  the case where you curate the first turns and then skip.
+- **Marker present and all turns there** → it touches nothing. Your version wins.
 
-Quindi: **cura il log tu**, che è sempre la versione migliore. Il paracadute esiste per
-le sessioni in cui salti, non per sostituirti.
+So: **curate the log yourself**, that is always the better version. The parachute exists for
+the sessions where you skip, not to replace you.
 
-## Regole di contenuto (rigorose)
-- **Prompt dell'utente**: copiati **VERBATIM**, senza modificare nulla.
-- **Risposte di Claude**: **riassunte**, in forma sintetica.
-  - **Nessun blocco di codice.** Per le modifiche ai file scrivere:
-    `modifica su "<path>": <spiegazione>`. Per comandi: `eseguito <comando>: <esito>`.
-  - Niente output lunghi: solo decisioni, azioni, esiti, file toccati.
-- Lingua: italiano (come la conversazione).
+## Content rules (strict)
+- **User prompts**: copied **VERBATIM**, changing nothing.
+- **Claude's answers**: **summarised**, in condensed form.
+  - **No code blocks.** For file changes write: `modifica su "<path>": <explanation>`. For
+    commands: `eseguito <command>: <outcome>`.
+  - No long output: only decisions, actions, outcomes, files touched.
+- Language: the same as the conversation. The vault is private, so the log (and the Italian
+  wording of the format below) follows how the user actually talks.
 
-## Wikilink `[[...]]` (per il grafo)
-Le conversazioni devono diventare **nodi collegati** nel grafo (Obsidian/graphify),
-non file orfani. Solo `[[wikilink]]` crea un edge; i link markdown `[testo](file.md)` no.
-- **Riga `**Collegamenti:**`** in testa al file (dopo l'header): elenca i progetti e le
-  entità ricorrenti toccate, ognuno come `[[nome]]`. Usa gli **stessi nomi** delle pagine
-  wiki / dei progetti quando esistono (es. `[[ricing-hyprland]]`, `[[brain-KB]]`,
-  `[[config-repo-pubblica]]`), così il nodo si risolve invece di restare "unresolved".
-- Inline: alla **prima menzione** di un progetto o di una pagina wiki nel corpo, scrivilo
-  come `[[nome]]`. Non wikilinkare ogni ripetizione — solo la prima, e solo concetti che
-  meritano un nodo (progetti, temi, pagine wiki), non file di codice o comandi.
-- Nomi coerenti e in kebab-case, uguali tra sessioni: due grafie diverse = due nodi diversi.
+## `[[...]]` wikilinks (for the graph)
+Conversations must become **connected nodes** in the graph (Obsidian/graphify), not orphan
+files. Only `[[wikilink]]` creates an edge; markdown links `[text](file.md)` do not.
+- **A `**Collegamenti:**` line** at the top of the file (after the header): lists the projects
+  and recurring entities touched, each as `[[name]]`. Use the **same names** as the wiki pages
+  or projects where they exist (e.g. `[[ricing-hyprland]]`, `[[brain-KB]]`,
+  `[[config-repo-pubblica]]`), so the node resolves instead of staying "unresolved".
+- Inline: at the **first mention** of a project or wiki page in the body, write it as
+  `[[name]]`. Do not wikilink every repetition — only the first, and only concepts that
+  deserve a node (projects, themes, wiki pages), not code files or commands.
+- Consistent kebab-case names, identical across sessions: two spellings = two nodes.
 
-## Formato
+## Format
 ```
 # Conversazione DD/MM/YYYY HH:MM
 
@@ -75,27 +75,27 @@ non file orfani. Solo `[[wikilink]]` crea un edge; i link markdown `[testo](file
 <prompt verbatim>
 
 ## Claude
-- <azione/decisione, con [[progetto]] wikilinkato alla prima menzione>
-- modifica su "percorso/file": <spiegazione>
-- eseguito <comando>: <esito sintetico>
+- <action/decision, with [[project]] wikilinked at first mention>
+- modifica su "path/file": <explanation>
+- eseguito <command>: <short outcome>
 
 ## HH:MM — Utente
 ...
 ```
 
-## Indice per il recall (`INDEX.md`)
-`~/brain/conversations/INDEX.md` è il TOC curato usato per il recall automatico
-(vedi la regola in `~/.claude/CLAUDE.md`). **A fine sessione** (o quando i temi
-sono ormai chiari) aggiungere/aggiornare la riga della sessione corrente:
+## Recall index (`INDEX.md`)
+`~/brain/conversations/INDEX.md` is the curated TOC used for automatic recall (see the rule in
+`~/.claude/CLAUDE.md`). **At the end of a session** (or once the themes are clear) add or
+update the current session's line:
 
 ```
-- [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · <temi sintetici, separati da ;> · *progetti:* [[progetto-1]] [[progetto-2]]
+- [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · <short themes, semicolon-separated> · *progetti:* [[project-1]] [[project-2]]
 ```
 
-Una riga per sessione, ordine cronologico. È la "superficie di ricerca": deve
-bastare a decidere quali `Conv_*.md` aprire senza leggerli tutti. Niente code block.
+One line per session, chronological order. It is the "search surface": it must be enough to
+decide which `Conv_*.md` to open without reading them all. No code blocks.
 
-## Note
-- Commit del vault automatico per milestone (vedi `~/.claude/CLAUDE.md`): l'update
-  di fine sessione di `INDEX.md` rientra nel commit della milestone corrente.
-- Il marker `.current-session` non va versionato (vedi .gitignore del vault).
+## Notes
+- The vault is committed automatically per milestone (see `~/.claude/CLAUDE.md`): the
+  end-of-session `INDEX.md` update belongs to the current milestone's commit.
+- The `.current-session` marker must not be versioned (see the vault's .gitignore).

@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Hook SessionStart: crea un nuovo file conversazione e aggiorna il marker .current-session.
-# Matcher consigliato: startup|resume|clear (NON compact, per non spezzare la sessione in corso).
+# SessionStart hook: creates a new conversation file and updates the .current-session marker.
+# Recommended matcher: startup|resume|clear (NOT compact, so the running session is not split).
+# The header written into the file stays in Italian: it is content of a private vault whose
+# existing logs use that wording.
 set -euo pipefail
 
 dir="$HOME/brain/conversations"
@@ -9,7 +11,7 @@ mkdir -p "$dir"
 ts="$(date +%d-%m-%y_%H-%M)"           # DD-MM-YY_HH-MM (filesystem-safe)
 file="$dir/Conv_${ts}.md"
 
-# Non sovrascrivere se per caso esiste già un file con lo stesso minuto.
+# Do not overwrite if a file for the same minute happens to exist already.
 if [ ! -f "$file" ]; then
   {
     printf '# Conversazione %s\n\n' "$(date '+%d/%m/%Y %H:%M')"
@@ -17,9 +19,9 @@ if [ ! -f "$file" ]; then
   } > "$file"
 fi
 
-# Marker: fonte di verità del file attivo (resiste alla compattazione del contesto).
+# Marker: source of truth for the active file (survives context compaction).
 printf '%s\n' "$file" > "$dir/.current-session"
 
-# Iniezione di contesto per Claude (stdout di un hook SessionStart entra nel contesto).
-printf 'CONVERSATION LOG ATTIVO: %s\n' "$file"
-printf 'Aggiorna questo file a ogni turno seguendo la skill "conversation-log": prompt utente verbatim, tue risposte riassunte senza blocchi di codice, sovrascrivendo sempre questo stesso file.\n'
+# Context injection for Claude (a SessionStart hook's stdout enters the context).
+printf 'ACTIVE CONVERSATION LOG: %s\n' "$file"
+printf 'Update this file on every turn following the "conversation-log" skill: user prompts verbatim, your answers summarised without code blocks, always overwriting this same file.\n'

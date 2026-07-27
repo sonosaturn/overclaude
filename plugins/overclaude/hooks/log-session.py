@@ -1,23 +1,26 @@
 #!/usr/bin/env python3
-"""Hook Stop: pavimento di sicurezza per il log conversazioni.
+"""Stop hook: safety floor for the conversation log.
 
-Il log lo cura il modello seguendo la skill conversation-log. Questo script esiste
-per le sessioni in cui non lo fa: rigenera il Conv_*.md corrente dal transcript
-.jsonl di Claude Code, in modo deterministico, cosi' il file non resta mai vuoto.
+The model curates the log by following the conversation-log skill. This script exists
+for the sessions where it does not: it regenerates the current Conv_*.md from Claude
+Code's .jsonl transcript, deterministically, so the file is never left empty.
 
-Tre casi, decisi dal marker "<!-- curated -->":
+Three cases, decided by the "<!-- curated -->" marker:
 
-  * marker assente          -> riscrive tutto il file dal transcript;
-  * marker presente, turni
-    mancanti nel file       -> accoda SOLO quelli, senza toccare il curato;
-  * marker presente, tutti
-    i turni gia' nel file   -> non fa nulla.
+  * marker absent           -> rewrites the whole file from the transcript;
+  * marker present, turns
+    missing from the file   -> appends ONLY those, without touching the curated part;
+  * marker present, every
+    turn already in place   -> does nothing.
 
-Il caso di mezzo copre il log curato a meta': senza di esso, bastava un marker
-scritto al primo turno per perdere tutti i turni successivi.
+The middle case covers a half-curated log: without it, a marker written on the first
+turn was enough to lose every later turn.
 
-Input: JSON su stdin dall'hook Stop (campo transcript_path). Fallback: il .jsonl
-piu' recente sotto ~/.claude/projects/.
+The strings written into the log stay in Italian on purpose: they are content of a
+private vault whose existing files use that wording.
+
+Input: JSON on stdin from the Stop hook (transcript_path field). Fallback: the most
+recent .jsonl under ~/.claude/projects/.
 """
 import json, os, re, sys, glob
 
@@ -26,9 +29,8 @@ CONV_DIR = os.path.join(HOME, "brain", "conversations")
 CURATED_MARKER = "<!-- curated -->"
 AUTO_MARKER = "<!-- auto-generated: log-session.py -->"
 GAP_MARKER = "<!-- turni sotto: auto-estratti, non curati -->"
-# Quanto testo del prompt usare per riconoscerlo dentro il file. Abbastanza da
-# distinguere due prompt diversi, poco abbastanza da sopravvivere a una riga
-# spezzata diversamente dal modello.
+# How much of the prompt to use to recognise it inside the file. Enough to tell two
+# different prompts apart, short enough to survive a line the model wrapped differently.
 KEY_LEN = 60
 
 
@@ -58,7 +60,7 @@ def current_conv_file():
 
 
 def strip_code(text):
-    # via i blocchi ``` ... ``` (regola della skill: niente code block nel log)
+    # drop the ``` ... ``` blocks (skill rule: no code blocks in the log)
     return re.sub(r"```.*?```", "[codice omesso]", text, flags=re.DOTALL).strip()
 
 
@@ -68,7 +70,7 @@ def hhmm(ts):
 
 
 def extract_turns(transcript):
-    """Lista di turni: {time, user, claude:[testi]}."""
+    """List of turns: {time, user, claude:[texts]}."""
     turns = []
     cur = None
     for line in open(transcript, encoding="utf-8", errors="replace"):
@@ -80,7 +82,7 @@ def extract_turns(transcript):
         m = o.get("message", {}) if isinstance(o.get("message"), dict) else {}
         c = m.get("content")
         if t == "user":
-            if o.get("isMeta"):  # iniezione skill/sistema, non un prompt vero
+            if o.get("isMeta"):  # skill/system injection, not a real prompt
                 continue
             is_res = isinstance(c, list) and any(
                 isinstance(p, dict) and p.get("type") == "tool_result" for p in c
@@ -113,7 +115,7 @@ def extract_turns(transcript):
 
 
 def header_lines(conv_file):
-    """Riusa l'header esistente (data/ora), altrimenti uno minimo."""
+    """Reuse the existing header (date/time), otherwise a minimal one."""
     try:
         with open(conv_file, encoding="utf-8", errors="replace") as f:
             head = []
@@ -149,11 +151,11 @@ def build(conv_file, turns):
 
 
 def is_curated(text):
-    """Il marker vale solo nell'header, cioe' prima del primo turno.
+    """The marker only counts in the header, i.e. before the first turn.
 
-    Cercarlo in tutto il file lo fa scattare anche quando compare *dentro* il log:
-    basta una sessione in cui si parla del marker perche' le risposte lo citino
-    verbatim, e un log non curato verrebbe scambiato per curato.
+    Searching the whole file makes it fire even when the marker shows up *inside* the
+    log: one session that talks about the marker is enough for the answers to quote it
+    verbatim, and an uncurated log would be mistaken for a curated one.
     """
     for line in text.splitlines():
         if line.startswith("## "):
@@ -164,11 +166,11 @@ def is_curated(text):
 
 
 def missing_turns(text, turns):
-    """Turni non ancora presenti nel file curato.
+    """Turns not yet present in the curated file.
 
-    Il confronto e' sul testo del prompt, non sul conteggio delle intestazioni:
-    regge anche se il modello ha formattato il curato a modo suo. Il conteggio
-    per chiave serve ai prompt ripetuti ("procedi" due volte non e' un duplicato).
+    The comparison is on the prompt text, not on a count of headings: it holds even if
+    the model formatted the curated log its own way. The per-key count handles repeated
+    prompts ("go ahead" twice is not a duplicate).
     """
     seen = {}
     missing = []
@@ -202,8 +204,8 @@ def main():
         missing = missing_turns(existing, turns)
         if not missing:
             return 0
-        # Il separatore serve una volta sola: agli Stop successivi i turni accodati
-        # risultano gia' presenti, e sotto lo stesso marker finisce il seguito.
+        # The separator is needed only once: on later Stops the appended turns are
+        # already present, and the continuation lands under the same marker.
         chunk = ["", GAP_MARKER, ""] if GAP_MARKER not in existing else [""]
         for tr in missing:
             chunk += render_turn(tr)
@@ -213,7 +215,7 @@ def main():
                           "log-session: %d turni non curati accodati al log" % len(missing)}))
         return 0
 
-    # build() rilegge l'header dal file: comporre PRIMA di aprire in "w", che tronca.
+    # build() re-reads the header from the file: compose BEFORE opening in "w", which truncates.
     content = build(conv_file, turns)
     with open(conv_file, "w", encoding="utf-8") as f:
         f.write(content)

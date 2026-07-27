@@ -1,66 +1,65 @@
 ---
 name: brain
 description: >-
-  Knowledge base personale (second brain) in ~/brain, pattern LLM-wiki. Usa questa
-  skill quando l'utente vuole INGERIRE un documento/URL nella KB, INTERROGARE la
-  knowledge base ("cosa so su X?", "cerca nel mio brain/wiki/second brain"), o fare
-  il LINT/manutenzione del vault. Converte documenti con markitdown, mantiene pagine
-  wiki markdown con cross-reference [[...]] per Obsidian, e può generare un grafo con
-  graphify.
+  Personal knowledge base (second brain) in ~/brain, LLM-wiki pattern. Use this skill when
+  the user wants to INGEST a document/URL into the KB, QUERY the knowledge base ("what do I
+  know about X?", "search my brain/wiki/second brain"), or LINT/maintain the vault. Converts
+  documents with markitdown, keeps markdown wiki pages with [[...]] cross-references for
+  Obsidian, and can generate a graph with graphify.
 ---
 
 # Skill: brain
 
-Gestisce la knowledge base in `~/brain`. **Leggere sempre prima `~/brain/BRAIN.md`**
-(lo schema: struttura, convenzioni pagine, workflow). Questa skill è l'esecuzione
-operativa di quei workflow.
+Manages the knowledge base in `~/brain`. **Always read `~/brain/BRAIN.md` first** (the
+schema: structure, page conventions, workflows). This skill is the operational execution of
+those workflows.
 
-Prerequisiti già installati: `markitdown` e `graphify` in `~/.local/bin`
-(se non in PATH: `~/.local/bin/markitdown`).
+Prerequisites already installed: `markitdown` and `graphify` in `~/.local/bin` (if not in
+PATH: `~/.local/bin/markitdown`).
 
-## Riconoscere l'intento
+## Recognising the intent
 
-- **INGEST** — "aggiungi/ingerisci <file|URL> nel brain", "salva questo nella KB".
-- **QUERY** — "cosa so su X?", "cerca nel mio brain", "secondo la mia wiki…".
-- **LINT** — "fai il lint/la manutenzione della KB", "controlla la wiki".
+- **INGEST** — "add/ingest <file|URL> into the brain", "save this in the KB".
+- **QUERY** — "what do I know about X?", "search my brain", "according to my wiki…".
+- **LINT** — "lint/maintain the KB", "check the wiki".
 
 ## INGEST
 
-1. **Convertire la fonte in markdown** dentro `~/brain/sources/` (nome `kebab-case.md`):
-   - file (PDF/DOCX/PPTX/XLSX/HTML/audio): `markitdown "<path>" -o ~/brain/sources/<nome>.md`
-   - URL/HTML: `markitdown "<url>" -o ~/brain/sources/<nome>.md` (oppure WebFetch → salvare il markdown)
-   - se già markdown/testo: copiarlo in `sources/` così com'è.
-2. **Leggere** la fonte convertita.
-3. **Aggiornare/creare le pagine wiki** in `~/brain/wiki/` pertinenti (tipicamente 5-15
-   file): summary, pagine-entità, con frontmatter (vedi BRAIN.md) e cross-reference
-   `[[...]]`. Citare sempre `(fonte: sources/<file>)`.
-4. **Aggiornare `index.md`** (nuove pagine sotto la categoria giusta) e **`log.md`**
-   (riga di ingest con data e fonte).
-5. Una fonte alla volta. Al termine, riassumere all'utente cosa è stato creato/toccato.
+1. **Convert the source to markdown** inside `~/brain/sources/` (`kebab-case.md` name):
+   - files (PDF/DOCX/PPTX/XLSX/HTML/audio): `markitdown "<path>" -o ~/brain/sources/<name>.md`
+   - URL/HTML: `markitdown "<url>" -o ~/brain/sources/<name>.md` (or WebFetch → save the markdown)
+   - if already markdown/text: copy it into `sources/` as is.
+2. **Read** the converted source.
+3. **Update/create the relevant wiki pages** in `~/brain/wiki/` (typically 5-15 files):
+   summary, entity pages, with frontmatter (see BRAIN.md) and `[[...]]` cross-references.
+   Always cite `(fonte: sources/<file>)`.
+4. **Update `index.md`** (new pages under the right category) and **`log.md`** (an ingest
+   line with date and source).
+5. One source at a time. When done, summarise for the user what was created/touched.
 
 ## QUERY
 
-1. Cercare nel vault: `rg -i "<termine>" ~/brain/wiki ~/brain/index.md` (e `sources/` se serve).
-2. Leggere le pagine rilevanti e **sintetizzare con citazioni** alle pagine/fonti.
-3. Se l'esplorazione produce conoscenza nuova e utile, **archiviarla** come nuova pagina
-   wiki + aggiornare `index.md`/`log.md` (chiedere conferma se è un cambiamento grosso).
+1. Search the vault: `rg -i "<term>" ~/brain/wiki ~/brain/index.md` (and `sources/` if needed).
+2. Read the relevant pages and **synthesise with citations** to the pages/sources.
+3. If the exploration produces new and useful knowledge, **file it** as a new wiki page and
+   update `index.md`/`log.md` (ask for confirmation if it is a big change).
 
 ## LINT
 
-Eseguire i controlli di `BRAIN.md` § LINT:
-- pagine orfane: `rg -L` incrociando i `[[link]]` con i file in `wiki/`;
-- `index.md` allineato ai file reali (`ls ~/brain/wiki`);
-- contraddizioni/affermazioni obsolete (lettura mirata);
-- cross-reference mancanti.
-Riportare i problemi, proporre fix, registrare l'esito in `log.md`.
+Run the checks in `BRAIN.md` § LINT:
+- orphan pages: `rg -L` cross-checking the `[[links]]` against the files in `wiki/`;
+- `index.md` aligned with the real files (`ls ~/brain/wiki`);
+- contradictions/stale statements (targeted reading);
+- missing cross-references.
+Report the problems, propose fixes, record the outcome in `log.md`.
 
-## Grafo (opzionale)
-Usare il wrapper con **fallback automatico tra modelli Gemini** (quota/sovraccarico):
-`~/brain/bin/graphify-run.sh .` → estrae il grafo in `graphify-out/`.
-Poi `GRAPHIFY_GEMINI_MODEL=<modello-attivo> graphify cluster-only ~/brain` per
-`graph.html` + `GRAPH_REPORT.md`. Richiede `GEMINI_API_KEY` (da `~/.config/brain.env`).
+## Graph (optional)
+Use the wrapper with **automatic fallback across Gemini models** (quota/overload):
+`~/brain/bin/graphify-run.sh .` → extracts the graph into `graphify-out/`.
+Then `GRAPHIFY_GEMINI_MODEL=<active-model> graphify cluster-only ~/brain` for `graph.html` +
+`GRAPH_REPORT.md`. Requires `GEMINI_API_KEY` (from `~/.config/brain.env`).
 
 ## Git
-Il vault è un repo git. **Commit automatico per milestone** (regola in
-`~/.claude/CLAUDE.md`): a ingest/lint completato, committare senza chiedere:
-`cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione>"`. Push manuale.
+The vault is a git repo. **Automatic commit per milestone** (rule in `~/.claude/CLAUDE.md`):
+once an ingest/lint is complete, commit without asking:
+`cd ~/brain && git add -A && git commit -m "<type>: <description>"`. Push stays manual.

@@ -7,5 +7,5 @@ if (-not (Test-Path $file)) {
   Set-Content -Path $file -Value $header -Encoding UTF8
 }
 Set-Content -Path (Join-Path $dir '.current-session') -Value $file -Encoding UTF8
-Write-Output "CONVERSATION LOG ATTIVO: $file"
-Write-Output 'Aggiorna questo file a ogni turno seguendo la skill "conversation-log": prompt utente verbatim, tue risposte riassunte senza blocchi di codice, sovrascrivendo sempre questo stesso file.'
+Write-Output "ACTIVE CONVERSATION LOG: $file"
+Write-Output 'Update this file on every turn following the "conversation-log" skill: user prompts verbatim, your answers summarised without code blocks, always overwriting this same file.'

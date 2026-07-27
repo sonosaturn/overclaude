@@ -14,10 +14,10 @@
           { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/autocommit.sh\"" },
           {
             "type": "command",
-            "_comment": "Su Windows 'python3' e' l'alias Microsoft Store: esiste nel PATH, stampa un avviso ed esce 49 senza eseguire nulla. Il probe sceglie il primo interprete che parte davvero.",
+            "_comment": "On Windows 'python3' is the Microsoft Store alias: it exists in PATH, prints a warning and exits 49 without running anything. The probe picks the first interpreter that actually starts.",
             "command": "bash -c 'for p in python3 python py; do \"$p\" -c \"\" >/dev/null 2>&1 && exec \"$p\" \"$1\"; done; exit 0' _ \"${CLAUDE_PLUGIN_ROOT}/hooks/log-session.py\"",
             "timeout": 15,
-            "statusMessage": "Aggiorno il log conversazione..."
+            "statusMessage": "Updating the conversation log..."
           }
         ]
       }
