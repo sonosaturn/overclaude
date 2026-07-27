@@ -72,8 +72,7 @@ Synced the repo with the Claude Code config actually in use:
 
 ## Status: BUILD COMPLETE ✅
 
-All 12 tasks of the [plan](superpowers/plans/2026-06-29-overclaude.md) implemented, tested and
-merged into `master`. Shell suite green (10 pass, 1 skip for missing `pwsh`).
+All 12 tasks of the original build plan implemented, tested and merged into `master`. Shell suite green (10 pass, 1 skip for missing `pwsh`).
 
 | # | Task | Commit | Status |
 |---|------|--------|--------|
@@ -112,4 +111,6 @@ empty placeholders, `~/.claude/settings.json` left intact after the dry run.
 ## Operational notes
 - context7 key rotated on 2026-06-29 (the old one had been exposed in chat; regenerated).
 - Local `.env` populated (context7 + Gemini), gitignored.
-- The SDD ledger lives in `.superpowers/` (gitignored): it is not part of the public repo.
+- The SDD artefacts (ledger, specs, plans) are not part of the public repo: the ledger lives in
+  `.superpowers/` (gitignored), and the specs/plans were removed from `docs/` — they stay in the
+  git history.

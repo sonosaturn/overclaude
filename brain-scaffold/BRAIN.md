@@ -72,6 +72,10 @@ The wrapper does **automatic fallback** across the Gemini models (`GRAPHIFY_GEMI
 Content in the user's language unless the source dictates otherwise. Technical terms in
 English when that is the standard form.
 
+The conversation logs in `conversations/` carry Italian structural strings (`# Conversazione`,
+`## HH:MM — Utente`) because that is the language of this vault's sessions; the
+`overclaude:conversation-log` skill documents the four files to change to switch them.
+
 ## Semantic recall (embeddings)
 `bin/brain-embed --full` (a one-off backfill) indexes conversations/wiki/sources into ChromaDB
 (`.chroma_db/`, gitignored) with Gemini embeddings. After that every commit updates only the

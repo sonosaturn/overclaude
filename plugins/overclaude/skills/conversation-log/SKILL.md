@@ -46,8 +46,28 @@ the sessions where you skip, not to replace you.
   - **No code blocks.** For file changes write: `modifica su "<path>": <explanation>`. For
     commands: `eseguito <command>: <outcome>`.
   - No long output: only decisions, actions, outcomes, files touched.
-- Language: the same as the conversation. The vault is private, so the log (and the Italian
-  wording of the format below) follows how the user actually talks.
+- Language: the same as the conversation.
+
+### Why the format below is in Italian
+
+The vault is private and this setup's conversations happen in Italian, so the log's structural
+strings (`# Conversazione`, `## HH:MM — Utente`, `> Log curato…`, `**Collegamenti:**`) are
+Italian, and every existing `Conv_*.md` uses them. They are the file's chrome, not its content.
+
+**To switch them to your own language**, change the same strings in all four places that write
+them — they must agree, or the Stop hook will not recognise its own header:
+
+| Where | What to change |
+|---|---|
+| this file, § Format | the template you follow when curating |
+| `hooks/new-session.sh` | the header `printf` lines (the `.sh` variant) |
+| `hooks/new-session.ps1` | the `$header` string (the Windows variant) |
+| `hooks/log-session.py` | `header_lines()` fallback, `render_turn()` (`— Utente`, `## Claude`, `(nessuna risposta testuale)`), `GAP_MARKER`, `strip_code()`'s `[codice omesso]` |
+
+`brain-embed` also reads the `**Collegamenti:**` line to tag a conversation with its project: if
+you rename it, update `_project_of()` in `bin/brain-embed` as well. Do not translate
+`<!-- curated -->`: it is a machine marker, not prose. Existing logs keep the old wording — the
+hook matches turns on prompt text, not on headings, so a mixed vault still works.
 
 ## `[[...]]` wikilinks (for the graph)
 Conversations must become **connected nodes** in the graph (Obsidian/graphify), not orphan

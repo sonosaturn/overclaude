@@ -2,7 +2,9 @@
 # SessionStart hook: creates a new conversation file and updates the .current-session marker.
 # Recommended matcher: startup|resume|clear (NOT compact, so the running session is not split).
 # The header written into the file stays in Italian: it is content of a private vault whose
-# existing logs use that wording.
+# existing logs use that wording. To switch it to another language, change it here, in
+# new-session.ps1, in log-session.py and in the conversation-log SKILL.md together — the skill
+# documents the full list.
 set -euo pipefail
 
 dir="$HOME/brain/conversations"

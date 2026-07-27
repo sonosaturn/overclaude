@@ -28,6 +28,11 @@ The conversation log is kept by `overclaude:conversation-log`, activated by the 
 `SessionStart` hook, which creates the session file and writes its path into
 `conversations/.current-session`.
 
+The log's structural strings (`# Conversazione`, `## HH:MM — Utente`, `[codice omesso]`) are in
+Italian, the language this vault's conversations are held in — the body of each log follows the
+conversation anyway. To move them to your own language, the conversation-log skill lists the four
+files that must be changed together (`SKILL.md` § "Why the format below is in Italian").
+
 ## Opening it in Obsidian
 
 *Open folder as vault* → this folder. The configuration in `.obsidian/` is already included

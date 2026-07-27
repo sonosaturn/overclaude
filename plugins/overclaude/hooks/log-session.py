@@ -17,7 +17,9 @@ The middle case covers a half-curated log: without it, a marker written on the f
 turn was enough to lose every later turn.
 
 The strings written into the log stay in Italian on purpose: they are content of a
-private vault whose existing files use that wording.
+private vault whose existing files use that wording. To switch language, change them
+here (header_lines, render_turn, GAP_MARKER, strip_code), in new-session.sh/.ps1 and in
+the conversation-log SKILL.md together.
 
 Input: JSON on stdin from the Stop hook (transcript_path field). Fallback: the most
 recent .jsonl under ~/.claude/projects/.
