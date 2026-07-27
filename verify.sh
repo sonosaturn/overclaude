@@ -5,15 +5,15 @@ for b in node uv gitnexus codeburn markitdown graphify rtk; do ck "tool $b in PA
 ck "settings.json valid" "jq -e . \"$HOME/.claude/settings.json\""
 ck "overclaude plugin enabled" "jq -e '.enabledPlugins[\"overclaude@overclaude\"]==true' \"$HOME/.claude/settings.json\""
 ck "~/brain exists" "[ -d \"$HOME/brain\" ]"
-ck "RTK.md presente (@RTK.md nel CLAUDE.md globale)" "[ -f \"$HOME/.claude/RTK.md\" ]"
-ck "statusline configurata" "jq -e '.statusLine.command | test(\"statusline\")' \"$HOME/.claude/settings.json\""
+ck "RTK.md present (@RTK.md in the global CLAUDE.md)" "[ -f \"$HOME/.claude/RTK.md\" ]"
+ck "statusline configured" "jq -e '.statusLine.command | test(\"statusline\")' \"$HOME/.claude/settings.json\""
 ck "gitnexus autoreindex script" "[ -x \"$HOME/.local/bin/gitnexus-autoreindex.sh\" ]"
 ck "git init.templateDir set" "git config --global --get init.templateDir"
 ck "git template post-commit hook" "[ -x \"$(git config --global --get init.templateDir)/hooks/post-commit\" ]"
 
-# Skill user-scope: devono essere esattamente quelle dichiarate, né una in più né una in
-# meno. È il controllo che accorge della deriva silenziosa: un repo a monte che aggiunge
-# skill cambia ciò che il manifest installa senza che nessuno lo noti.
+# User-scope skills: must be exactly the declared ones, no more and no less. This is the
+# check that catches silent drift: an upstream repo that adds skills changes what the
+# manifest installs without anyone noticing.
 HERE="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 exp="$HERE/config/skills.expected"
 if [ -f "$exp" ] && [ -d "$HOME/.claude/skills" ]; then
@@ -23,12 +23,12 @@ if [ -f "$exp" ] && [ -d "$HOME/.claude/skills" ]; then
   comm -23 "$t/actual" "$t/expected" > "$t/extra"
   comm -13 "$t/actual" "$t/expected" > "$t/missing"
   if [ -s "$t/extra" ] || [ -s "$t/missing" ]; then
-    echo "CHECK FAIL: skill user-scope divergenti"
-    [ -s "$t/extra" ]   && sed 's/^/  in più:    /' "$t/extra"
-    [ -s "$t/missing" ] && sed 's/^/  mancante:  /' "$t/missing"
+    echo "CHECK FAIL: user-scope skills diverge"
+    [ -s "$t/extra" ]   && sed 's/^/  extra:     /' "$t/extra"
+    [ -s "$t/missing" ] && sed 's/^/  missing:   /' "$t/missing"
     fails=$((fails+1))
   else
-    echo "CHECK PASS: skill user-scope ($(wc -l < "$t/expected" | tr -d ' ') attese)"
+    echo "CHECK PASS: user-scope skills ($(wc -l < "$t/expected" | tr -d ' ') expected)"
   fi
   rm -rf "$t"
 fi

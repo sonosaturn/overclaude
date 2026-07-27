@@ -1,7 +1,7 @@
-# Skill user-scope attese in ~/.claude/skills — una per riga.
-# Serve a verify.sh per accorgersi quando l'installazione diverge: un repo a monte
-# che cresce (o si svuota) cambia ciò che il manifest installa senza dirlo.
-# Le skill dei plugin non stanno qui: le gestisce enabledPlugins.
+# User-scope skills expected in ~/.claude/skills — one per line.
+# Lets verify.sh notice when the installation drifts: an upstream repo that grows
+# (or empties out) changes what the manifest installs without saying so.
+# Plugin skills do not belong here: enabledPlugins handles those.
 algorithmic-art
 ask-matt
 brandkit

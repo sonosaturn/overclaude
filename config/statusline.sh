@@ -1,9 +1,8 @@
 #!/usr/bin/env sh
-# Badge statusline dei plugin di modalità perenne (caveman, ponytail).
-# Il path della cache plugin contiene la versione: risolto a runtime con un glob,
-# così un bump del plugin non rompe la statusline. Gli script dei plugin stampano
-# da soli il proprio badge.
-cat >/dev/null 2>&1   # consuma il JSON che Claude Code passa su stdin
+# Statusline badges for the always-on mode plugins (caveman, ponytail).
+# The plugin cache path contains the version: resolved at runtime with a glob, so a plugin
+# version bump does not break the statusline. The plugin scripts print their own badge.
+cat >/dev/null 2>&1   # consume the JSON Claude Code passes on stdin
 for p in "$HOME"/.claude/plugins/cache/*/*/*/hooks/*-statusline.sh \
          "$HOME"/.claude/plugins/cache/*/*/*/src/hooks/*-statusline.sh; do
   [ -f "$p" ] || continue

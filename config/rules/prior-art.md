@@ -1,14 +1,13 @@
-# Prior art prima di costruire
+# Prior art before building
 
-Gradino che manca alla scala di `ponytail`, che si ferma a "una dipendenza già installata
-lo risolve".
+The rung missing from `ponytail`'s ladder, which stops at "a dependency already installed
+solves it".
 
-**Prima di scrivere da zero una capacità non banale** — parser, client di protocollo, layer
-di integrazione, CLI, pipeline, algoritmo con letteratura alle spalle — una ricerca sola:
-esiste già una libreria nell'ecosistema del progetto (`context7`), o un repo GitHub / CLI /
-MCP / skill che fa quel lavoro? Riporta in una riga cosa hai trovato e la scelta: riusare,
-adattare, o costruire comunque perché il fit è cattivo. **Verificare è obbligatorio,
-adottare no.**
+**Before writing a non-trivial capability from scratch** — a parser, a protocol client, an
+integration layer, a CLI, a pipeline, an algorithm with literature behind it — do one search:
+is there already a library in the project's ecosystem (`context7`), or a GitHub repo / CLI /
+MCP / skill that does that job? Report in one line what you found and the call: reuse, adapt,
+or build anyway because the fit is bad. **Checking is mandatory, adopting is not.**
 
-Salta per bugfix, refactor, glue specifico del dominio e qualsiasi cosa sotto ~50 righe:
-lì la ricerca costa più di quanto risparmia.
+Skip it for bugfixes, refactors, domain-specific glue and anything under ~50 lines: there the
+search costs more than it saves.

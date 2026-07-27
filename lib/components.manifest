@@ -9,18 +9,18 @@ mcp|context7|npx -y @upstash/context7-mcp
 mcp|playwright|npx @playwright/mcp@latest
 skills-cli|find-skills|vercel-labs/skills
 skills-cli|skill-creator|anthropics/skills
-# mattpocock/skills: pacchetto intero (lug 2026). Prima erano pinnate solo handoff e
-# grill-me; il resto (tdd, research, code-review, qa, obsidian-vault, writing-*, …) si è
-# rivelato utile, e la preferenza è massimo raggio d'azione. Le skill user-only per design
-# (disable-model-invocation) restano tali: si lanciano a mano con /handoff, /grill-me.
+# mattpocock/skills: the whole pack (Jul 2026). Only handoff and grill-me used to be pinned;
+# the rest (tdd, research, code-review, qa, obsidian-vault, writing-*, …) turned out to be
+# useful, and the preference is maximum reach. Skills that are user-only by design
+# (disable-model-invocation) stay that way: run them by hand with /handoff, /grill-me.
 skills-repo|mattpocock-skills|mattpocock/skills
 plugin|caveman|JuliusBrussee/caveman
 cmd|impeccable|npx -y impeccable install
 cmd|gitnexus-setup|gitnexus setup
-# rtk (rtk-ai/rtk, "Rust Token Killer"): proxy CLI che comprime l'output dei comandi prima
-# che entri nel contesto. `rtk init -g --auto-patch` si scrive da sé l'hook PreToolUse in
-# settings.json, quindi il template non lo duplica. Il riferimento a `@RTK.md` nel
-# CLAUDE.md globale vuole `config/RTK.md`, copiato dall'installer.
+# rtk (rtk-ai/rtk, "Rust Token Killer"): a CLI proxy that compresses command output before it
+# reaches the context. `rtk init -g --auto-patch` writes its own PreToolUse hook into
+# settings.json, so the template does not duplicate it. The `@RTK.md` reference in the global
+# CLAUDE.md expects `config/RTK.md`, copied by the installer.
 cmd|rtk|command -v rtk >/dev/null 2>&1 || curl -fsSL https://raw.githubusercontent.com/rtk-ai/rtk/master/install.sh | sh; rtk init -g --auto-patch
 # --- design/UI skills (review lug 2026) ---
 skills-cli|frontend-design|anthropics/skills
@@ -42,5 +42,5 @@ plugin|cognitive-accessibility@designer-skills|Owl-Listener/designer-skills
 plugin|accessible-content@designer-skills|Owl-Listener/designer-skills
 # --- image generation (needs GEMINI_API_KEY + billing) ---
 plugin|nano-banana@devon-claude-skills|devonjones/devon-claude-skills
-# --- UI component MCP (key redatta: vera in .env come MAGIC_API_KEY) ---
+# --- UI component MCP (key redacted: the real one lives in .env as MAGIC_API_KEY) ---
 mcp|magic|npx -y @21st-dev/magic@latest API_KEY=SET_IN_ENV

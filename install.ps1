@@ -29,8 +29,9 @@ else {
   foreach ($p in $tmpl.PSObject.Properties) { $base | Add-Member -Force -NotePropertyName $p.Name -NotePropertyValue $p.Value }
   $base | ConvertTo-Json -Depth 20 | Set-Content $settings -Encoding UTF8
 }
-# config in ~/.claude: rules, RTK.md (referenziato da @RTK.md), CLAUDE.md se assente,
-# statusline (path assoluto: sta in home, non nella repo) e flag delle modalita' perenni.
+# config in ~/.claude: rules, RTK.md (referenced by @RTK.md), CLAUDE.md if missing,
+# statusline (absolute path: it lives in the home dir, not in the repo) and the always-on
+# mode flags.
 $claudeDir = Join-Path $HOME '.claude'
 if ($DryRun) { Write-Output "WOULD COPY rules/RTK.md/CLAUDE.md + statusline in $claudeDir" }
 else {

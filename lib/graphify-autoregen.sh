@@ -1,16 +1,16 @@
 #!/usr/bin/env sh
-# Rigenera il grafo semantico graphify dopo un commit — SOLO nel vault brain. Detached: non blocca mai git.
-# Commit-driven: il grafo sta sempre al passo col vault (conversazioni, wiki, sources). Incrementale:
-# graphify rielabora solo i file cambiati, quindi il costo per commit è minimo dopo il primo run.
-# ponytail: no-op silenzioso se non è il vault, se graphify manca, o se manca la key Gemini;
-# un commit non deve MAI fallire per questo. Ceiling: costo Gemini per commit; se diventa troppo,
-# aggiungere un debounce (skip se l'ultimo run è < N minuti fa) qui.
+# Regenerates the graphify semantic graph after a commit — ONLY in the brain vault. Detached: never blocks git.
+# Commit-driven: the graph always keeps up with the vault (conversations, wiki, sources). Incremental:
+# graphify only reprocesses changed files, so the per-commit cost is minimal after the first run.
+# ponytail: silent no-op if this is not the vault, if graphify is missing, or if the Gemini key is missing;
+# a commit must NEVER fail because of this. Ceiling: Gemini cost per commit; if it gets too high,
+# add a debounce here (skip if the last run was < N minutes ago).
 command -v graphify >/dev/null 2>&1 || exit 0
 repo="$(git rev-parse --show-toplevel 2>/dev/null)" || exit 0
 [ -n "$repo" ] || exit 0
-# Guardia "è il vault brain": il wrapper graphify-run.sh esiste solo nel vault (lo mette lo scaffold).
+# "Is this the brain vault" guard: the graphify-run.sh wrapper only exists in the vault (the scaffold puts it there).
 [ -f "$repo/bin/graphify-run.sh" ] || exit 0
-# L'hook gira in un env minimale: carica la key Gemini da brain.env (graphify-run.sh non la sorgente da solo).
+# The hook runs in a minimal env: load the Gemini key from brain.env (graphify-run.sh does not source it itself).
 [ -f "$HOME/.config/brain.env" ] && . "$HOME/.config/brain.env"
 [ -n "${GEMINI_API_KEY:-}" ] || exit 0
 export GEMINI_API_KEY

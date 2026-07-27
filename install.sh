@@ -55,12 +55,12 @@ if [ ! -f "$HOME/.claude/CLAUDE.md" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD COPY CLAUDE.md"; else cp "$HERE/config/CLAUDE.md.template" "$HOME/.claude/CLAUDE.md"; fi
 fi
 [ "$DRY_RUN" = 1 ] || cp "$HERE"/config/rules/*.md "$HOME/.claude/rules/"
-# RTK.md è incluso via "@RTK.md" dal CLAUDE.md globale: senza il file, la direttiva è morta.
+# RTK.md is pulled in via "@RTK.md" by the global CLAUDE.md: without the file the directive is dead.
 [ "$DRY_RUN" = 1 ] || cp "$HERE/config/RTK.md" "$HOME/.claude/RTK.md"
 
-# 5b. statusline: badge delle modalità perenni (caveman/ponytail). Lo script sta nella
-#     home, non nella repo, perché il comando in settings.json vuole un path assoluto;
-#     lo scriviamo qui invece che nel template proprio per non cablarlo nella repo.
+# 5b. statusline: badges for the always-on modes (caveman/ponytail). The script lives in
+#     the home dir, not in the repo, because the command in settings.json wants an absolute
+#     path; we write it here instead of in the template precisely to keep it out of the repo.
 if [ "$(detect_os)" = windows ]; then
   _sl_src="$HERE/config/statusline.ps1"; _sl_dst="$HOME/.claude/statusline.ps1"
   _sl_cmd="powershell -NoProfile -ExecutionPolicy Bypass -File \"$(cygpath -w "$_sl_dst" 2>/dev/null || echo "$_sl_dst")\""
@@ -75,13 +75,13 @@ else
   jq --arg c "$_sl_cmd" '.statusLine = {type:"command", command:$c}' "$_st" > "$_st.tmp" && mv "$_st.tmp" "$_st"
 fi
 
-# caveman e ponytail sono modalità perenni: i plugin leggono il livello da questi file
-# di stato, senza i quali restano inattivi. Non sovrascrivo se esistono già: un livello
-# scelto dall'utente (lite/ultra) va rispettato al reinstall.
+# caveman and ponytail are always-on modes: the plugins read the level from these state
+# files, without which they stay inactive. Do not overwrite existing ones: a level the user
+# picked (lite/ultra) must survive a reinstall.
 for _mode in caveman ponytail; do
   _flag="$HOME/.claude/.${_mode}-active"
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD SET $_mode=full"
-  elif [ ! -f "$_flag" ]; then printf 'full' > "$_flag"; log "$_mode attivato (full)"; fi
+  elif [ ! -f "$_flag" ]; then printf 'full' > "$_flag"; log "$_mode enabled (full)"; fi
 done
 
 # 6. brain scaffold
@@ -99,15 +99,15 @@ if [ -d "$HOME/brain/claude-memory" ] || [ "$DRY_RUN" = 1 ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD LINK $memlink -> ~/brain/claude-memory"
   else
     mkdir -p "$(dirname "$memlink")"
-    # Se lì c'è già una directory vera, contiene memorie che Claude ha scritto: vanno
-    # travasate nel vault prima di sostituirla, e senza sovrascrivere ciò che il vault
-    # ha già. Un `rm -rf` diretto le perderebbe in silenzio.
+    # If a real directory is already there, it holds memories Claude wrote: they must be
+    # moved into the vault before replacing it, without overwriting what the vault already
+    # has. A straight `rm -rf` would lose them silently.
     if [ -d "$memlink" ] && [ ! -L "$memlink" ]; then
       for f in "$memlink"/*; do
         [ -e "$f" ] || continue
         [ -e "$HOME/brain/claude-memory/$(basename "$f")" ] || cp -r "$f" "$HOME/brain/claude-memory/"
       done
-      log "auto-memory preesistente travasata nel vault"
+      log "pre-existing auto-memory moved into the vault"
     fi
     rm -rf "$memlink"; ln -s "$HOME/brain/claude-memory" "$memlink"
   fi
@@ -118,25 +118,25 @@ if [ ! -f "$HERE/.env" ]; then
   if [ "$DRY_RUN" = 1 ]; then echo "WOULD CREATE .env from example"; else cp "$HERE/.env.example" "$HERE/.env"; fi
 fi
 
-# 7b. Il tooling del vault (brain-recall, brain-embed, graphify-run) legge la key da
-#     ~/.config/brain.env, non dal .env della repo: gira anche fuori da qui, e i segreti
-#     runtime non devono vivere dentro l'albero di un repo. Senza questo file la key nel
-#     .env non raggiunge mai il vault. Non sovrascrivo: se esiste, l'ha scritto l'utente.
-if [ "$DRY_RUN" = 1 ]; then echo "WOULD WRITE ~/.config/brain.env (se assente)"
+# 7b. The vault tooling (brain-recall, brain-embed, graphify-run) reads the key from
+#     ~/.config/brain.env, not from the repo's .env: it also runs outside this tree, and
+#     runtime secrets must not live inside a repo. Without this file the key in .env never
+#     reaches the vault. Not overwritten: if it exists, the user wrote it.
+if [ "$DRY_RUN" = 1 ]; then echo "WOULD WRITE ~/.config/brain.env (if missing)"
 elif [ ! -f "$HOME/.config/brain.env" ]; then
   # shellcheck disable=SC1090
   [ -f "$HERE/.env" ] && . "$HERE/.env"
   mkdir -p "$HOME/.config"
   umask 077
   {
-    echo "# brain.env — caricato dalla shell (vedi zshrc/bashrc) e dagli hook del vault."
-    echo "# Vive fuori da qualsiasi repo di proposito: non finisce in nessun commit."
+    echo "# brain.env — loaded by the shell (see zshrc/bashrc) and by the vault hooks."
+    echo "# It lives outside any repo on purpose: it never ends up in a commit."
     echo "export GEMINI_API_KEY=${GEMINI_API_KEY:-}"
     echo "export GRAPHIFY_GEMINI_MODEL=${GRAPHIFY_GEMINI_MODEL:-gemini-3.5-flash}"
     echo "export GRAPHIFY_GEMINI_MODELS=${GRAPHIFY_GEMINI_MODELS:-gemini-3.5-flash,gemini-3-flash-preview,gemini-3.1-flash-lite}"
   } > "$HOME/.config/brain.env"
   chmod 600 "$HOME/.config/brain.env"
-  log "scritto ~/.config/brain.env (aggiungi il source nella tua shell rc)"
+  log "wrote ~/.config/brain.env (add the source line to your shell rc)"
 fi
 
 # 8. gitnexus auto-reindex on commit: new repos auto-implant the post-commit hook via
