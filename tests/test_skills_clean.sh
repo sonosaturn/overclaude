@@ -13,18 +13,18 @@ done
 
 man="$root/lib/components.manifest"
 exp="$root/config/skills.expected"
-[ -s "$exp" ] || fail "config/skills.expected mancante o vuoto"
+[ -s "$exp" ] || fail "config/skills.expected missing or empty"
 
-# Ogni skill pinnata nel manifest deve comparire fra quelle attese, o verify.sh
-# segnalerebbe come "in più" qualcosa che l'installer mette apposta.
+# Every skill pinned in the manifest must show up among the expected ones, or verify.sh
+# would flag as "extra" something the installer puts there on purpose.
 grep '^skills-cli|' "$man" | cut -d'|' -f2 | while read -r s; do
-  grep -qx "$s" "$exp" || fail "skills-cli|$s non è in skills.expected"
+  grep -qx "$s" "$exp" || fail "skills-cli|$s is not in skills.expected"
 done
 
-# `skills add <repo>` senza --skill installa il repo INTERO: se quel repo cresce a monte,
-# l'installazione diverge in silenzio (è successo con mattpocock/skills: 2 skill -> 22).
-# Il tipo skills-repo lo fa apposta ed è coperto dal confronto in verify.sh; una riga cmd
-# che lo fa di nascosto, no.
+# `skills add <repo>` without --skill installs the WHOLE repo: if that repo grows upstream,
+# the installation drifts silently (it happened with mattpocock/skills: 2 skills -> 22).
+# The skills-repo type does that on purpose and is covered by verify.sh's comparison; a cmd
+# line doing it on the sly is not.
 ! grep '^cmd|' "$man" | grep 'skills' | grep 'add' | grep -qv -- '--skill' \
-  || fail "voce cmd che installa un repo di skill intero: pinna con skills-cli|<nome>|<repo>"
+  || fail "cmd entry installing a whole skills repo: pin it with skills-cli|<name>|<repo>"
 echo "PASS test_skills_clean"

@@ -1,116 +1,115 @@
-# OverClaude — Stato del progetto
+# OverClaude — Project status
 
-Ultimo aggiornamento: 2026-07-26
+Last updated: 2026-07-26
 
-## Aggiornamento 2026-07-26 (b) — repo in pari con la config live
+## Update 2026-07-26 (b) — repo caught up with the live config
 
-Passata inversa rispetto al solito: non "installa ciò che manca sulla macchina", ma
-"porta nella repo ciò che la macchina ha in più". Delta trovato e chiuso:
+The reverse pass compared to the usual one: not "install what is missing on the machine", but
+"bring into the repo what the machine has on top". Delta found and closed:
 
-- **`rtk`** (rtk-ai/rtk) era l'unico componente della config live assente dal manifest.
-  Aggiunto come `cmd` idempotente (installa solo se manca, poi `rtk init -g --auto-patch`,
-  che si scrive da sé l'hook `PreToolUse`). Con lui `config/RTK.md`, che il `CLAUDE.md`
-  globale include via `@RTK.md`, copiato in `~/.claude` dall'installer.
-- **Statusline**: `config/statusline.ps1` (+ gemello `statusline.sh` per POSIX) e lo step
-  che lo installa e scrive `statusLine` in `settings.json`. Il path assoluto lo produce
-  l'installer, la repo resta senza path cablati.
-- **`CLAUDE.md.template`**: assorbito il preambolo che viveva solo in locale (Behavioral
-  Guidelines + sezione rtk). 199 righe, al limite delle ~200 dichiarate nel template stesso.
+- **`rtk`** (rtk-ai/rtk) was the only component of the live config missing from the manifest.
+  Added as an idempotent `cmd` (installs only if missing, then `rtk init -g --auto-patch`, which
+  writes its own `PreToolUse` hook). Along with it `config/RTK.md`, which the global `CLAUDE.md`
+  pulls in via `@RTK.md`, copied into `~/.claude` by the installer.
+- **Statusline**: `config/statusline.ps1` (+ its `statusline.sh` twin for POSIX) and the step that
+  installs it and writes `statusLine` into `settings.json`. The absolute path is produced by the
+  installer; the repo stays free of hardcoded paths.
+- **`CLAUDE.md.template`**: absorbed the preamble that only lived locally (Behavioral Guidelines
+  + rtk section). 199 lines, right at the ~200 the template itself declares.
 - `settings.template.json`: `autoUpdatesChannel: latest`.
-- `detect_os` riconosce Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) → `windows`, usato per
-  scegliere la variante di statusline.
-- `install.ps1` allineato sui punti che gli mancavano del tutto: `rules/`, `RTK.md`,
-  `CLAUDE.md` se assente, statusline, flag `.caveman-active`/`.ponytail-active`.
-  **Restano fuori** (lag noto, l'install su questa macchina passa da Git Bash):
-  `~/.config/brain.env`, symlink della auto-memoria, script in `~/.local/bin` e template
-  git per l'auto-reindex.
-- `verify.sh`: check di `rtk`, `RTK.md` e statusline. `test_ps_syntax` ora usa anche
-  `powershell` 5.1 quando manca `pwsh` → i `.ps1` sono validati per la prima volta.
+- `detect_os` recognises Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) → `windows`, used to pick the
+  statusline variant.
+- `install.ps1` brought in line on the points it lacked entirely: `rules/`, `RTK.md`, `CLAUDE.md`
+  if missing, statusline, the `.caveman-active`/`.ponytail-active` flags.
+  **Still out** (known lag, the install on this machine goes through Git Bash):
+  `~/.config/brain.env`, the auto-memory symlink, the scripts in `~/.local/bin` and the git
+  template for auto-reindexing.
+- `verify.sh`: checks for `rtk`, `RTK.md` and the statusline. `test_ps_syntax` now also uses
+  `powershell` 5.1 when `pwsh` is missing → the `.ps1` files are validated for the first time.
 
-## Aggiornamento 2026-07-26 (a) — Windows nativo: tre fallimenti silenziosi
+## Update 2026-07-26 (a) — native Windows: three silent failures
 
-Sessione di allineamento macchina ↔ repo su Windows 11 + Git Bash. Tutti e tre i bug
-trovati avevano lo stesso profilo: **nessun errore visibile, funzione semplicemente
-inerte**. Documentati in [`docs/WINDOWS.md`](WINDOWS.md).
+Machine ↔ repo alignment session on Windows 11 + Git Bash. All three bugs found had the same
+profile: **no visible error, the function simply inert**. Documented in
+[`docs/WINDOWS.md`](WINDOWS.md).
 
-- **Hook `Stop` del log conversazioni mai eseguito** → i `Conv_*.md` di luglio erano stub
-  vuoti. Tre cause sommate: (a) `python3` su Windows è l'alias Microsoft Store, presente nel
-  `PATH`, che esce 49 senza eseguire; (b) il plugin installato era la 0.1.0, precedente
-  all'aggiunta di `log-session.py`, e la versione non era mai stata bumpata → `plugin update`
-  no-op; (c) `log-session.py` chiamava `build()` *dentro* `open(conv_file, "w")`, che tronca il
-  file prima che l'header venga riletto → data/ora della sessione persa a ogni rigenerazione.
-  Corretti: probe dell'interprete in `hooks.json`, versione plugin a **0.2.0**, `build()`
-  prima della `open`, letture con `encoding="utf-8", errors="replace"`.
-- **`brain-recall` crashava in stampa** (`UnicodeEncodeError`, console cp1252 vs `↔`/`—`):
-  `reconfigure(encoding="utf-8", errors="replace")` su stdout/stderr.
-- **Self-check del vault falso-negativo**: `uv run … python3 -c` (alias Store) e vault di
-  test in un path MSYS `/tmp/...` che python nativo legge come `C:\tmp\...` → embed e count
-  su directory diverse. Corretti con `python` e `cygpath -m`.
-- `mattpocock/skills` passa a pacchetto intero nel manifest; `config/skills.expected`
-  rigenerato (69 skill) → `install.sh --check` **ALL CHECKS PASSED**.
-- GitNexus: estensione FTS installata (`GITNEXUS_LBUG_EXTENSION_INSTALL=auto … --repair-fts`),
-  BM25 attivo. `VECTOR` resta non disponibile su Windows (exact-scan).
+- **The conversation log `Stop` hook never ran** → July's `Conv_*.md` files were empty stubs.
+  Three causes stacked: (a) `python3` on Windows is the Microsoft Store alias, present in `PATH`,
+  which exits 49 without executing; (b) the installed plugin was 0.1.0, older than the addition of
+  `log-session.py`, and the version had never been bumped → `plugin update` was a no-op;
+  (c) `log-session.py` called `build()` *inside* `open(conv_file, "w")`, which truncates the file
+  before the header is re-read → the session date/time lost on every regeneration.
+  Fixed: interpreter probe in `hooks.json`, plugin version to **0.2.0**, `build()` before the
+  `open`, reads with `encoding="utf-8", errors="replace"`.
+- **`brain-recall` crashed on print** (`UnicodeEncodeError`, cp1252 console vs `↔`/`—`):
+  `reconfigure(encoding="utf-8", errors="replace")` on stdout/stderr.
+- **False-negative vault self-check**: `uv run … python3 -c` (Store alias) and a test vault in an
+  MSYS `/tmp/...` path that native python reads as `C:\tmp\...` → embedding and count on different
+  directories. Fixed with `python` and `cygpath -m`.
+- `mattpocock/skills` switched to the whole pack in the manifest; `config/skills.expected`
+  regenerated (69 skills) → `install.sh --check` **ALL CHECKS PASSED**.
+- GitNexus: FTS extension installed (`GITNEXUS_LBUG_EXTENSION_INSTALL=auto … --repair-fts`), BM25
+  active. `VECTOR` remains unavailable on Windows (exact scan).
 
-## Aggiornamento 2026-07-06 — allineamento alla config live
+## Update 2026-07-06 — alignment with the live config
 
-Sincronizzata la repo con la config Claude Code effettivamente in uso:
+Synced the repo with the Claude Code config actually in use:
 
-- **Fix `skills-cli` dispatcher** (`lib/run-component.sh`): `npx skills add <repo>` installa
-  l'**intero** repo (verificato dal vivo: `mattpocock/skills` → 38 skill). Aggiunto
-  `--skill $name --agent claude --global --yes` così installa **solo** la skill nominata.
-- **Bundle `context7-mcp`** nel plugin proprio (`plugins/overclaude/skills/context7-mcp/`):
-  è una skill companion custom senza upstream, come brain/conversation-log.
-- **Exa** documentato nel README come connector lato account claude.ai (non scriptabile).
-- playwright/grill-me/caveman erano già nel manifest → confermati come default voluti e
-  installati anche in locale (macchina e manifest ora combaciano).
-- **Auto-sync** (`bin/overclaude-sync.sh`): hook PostToolUse(Bash) del **maintainer** che,
-  quando aggiunge una skill (`npx skills … add <repo> --skill <name>`) o un MCP
-  (`claude mcp add <name> -- <cmd>`), appende la riga al manifest, committa e **pusha** in
-  automatico → la repo resta al passo con la config live. Cablato nel `settings.json`
-  personale (gitignore, non nella repo pubblica). Ceiling: solo skill/MCP via i comandi
-  Bash standard; plugin e add interattivi/da terminale utente → sync a mano.
+- **`skills-cli` dispatcher fix** (`lib/run-component.sh`): `npx skills add <repo>` installs the
+  **whole** repo (verified live: `mattpocock/skills` → 38 skills). Added
+  `--skill $name --agent claude --global --yes` so it installs **only** the named skill.
+- **`context7-mcp` bundled** into the own plugin (`plugins/overclaude/skills/context7-mcp/`): it
+  is a custom companion skill with no upstream, like brain/conversation-log.
+- **Exa** documented in the README as an account-side claude.ai connector (not scriptable).
+- playwright/grill-me/caveman were already in the manifest → confirmed as intended defaults and
+  installed locally too (machine and manifest now match).
+- **Auto-sync** (`bin/overclaude-sync.sh`): a **maintainer** PostToolUse(Bash) hook that, when a
+  skill (`npx skills … add <repo> --skill <name>`) or an MCP (`claude mcp add <name> -- <cmd>`) is
+  added, appends the line to the manifest, commits and **pushes** automatically → the repo keeps
+  up with the live config. Wired into the personal `settings.json` (gitignored, not in the public
+  repo). Ceiling: only skills/MCPs via the standard Bash commands; plugins and interactive/manual
+  adds → sync by hand.
 
-## Stato: BUILD COMPLETA ✅
+## Status: BUILD COMPLETE ✅
 
-Tutti i 12 task del [piano](superpowers/plans/2026-06-29-overclaude.md) implementati,
-testati e mergiati su `master`. Suite shell verde (10 pass, 1 skip per assenza `pwsh`).
+All 12 tasks of the [plan](superpowers/plans/2026-06-29-overclaude.md) implemented, tested and
+merged into `master`. Shell suite green (10 pass, 1 skip for missing `pwsh`).
 
-| # | Task | Commit | Stato |
-|---|------|--------|-------|
+| # | Task | Commit | Status |
+|---|------|--------|--------|
 | 1 | Repo skeleton + manifests | `2c959ce` | ✅ |
-| 2 | Bundle skill brain + conversation-log | `24adc78`, `2f7535e` | ✅ |
-| 3 | Hook SessionStart new-session (sh + ps1) | `185da7d` | ✅ |
-| 4 | Scaffold brain vuoto | `97f7e09` | ✅ |
+| 2 | Bundle brain + conversation-log skills | `24adc78`, `2f7535e` | ✅ |
+| 3 | SessionStart new-session hook (sh + ps1) | `185da7d` | ✅ |
+| 4 | Empty brain scaffold | `97f7e09` | ✅ |
 | 5 | Config template + .env.example | `299a1ff` | ✅ |
 | 6 | lib/detect-os | `725562d` | ✅ |
-| 7 | lib/merge-settings (non distruttivo) | `0a982dc` | ✅ |
+| 7 | lib/merge-settings (non-destructive) | `0a982dc` | ✅ |
 | 8 | components.manifest + dispatcher | `579da66` | ✅ |
 | 9 | install.sh (POSIX) | `96aee1b` | ✅ |
 | 10 | verify.sh | `40c0ce7` | ✅ |
-| 11 | install.ps1 + verify.ps1 (Windows) | `42fce88` | ⚠️ vedi sotto |
+| 11 | install.ps1 + verify.ps1 (Windows) | `42fce88` | ⚠️ see below |
 | 12 | README + test runner | `79d22e0` | ✅ |
 
-## Modalità di esecuzione
-Task 1-2 eseguiti subagent-driven (review su sonnet, approvati). Dal Task 3 i subagent
-hanno colpito il limite di sessione → esecuzione inline (codice preso dal piano, ogni test
-eseguito, commit per task).
+## Execution mode
+Tasks 1-2 ran subagent-driven (reviewed on sonnet, approved). From Task 3 on the subagents hit the
+session limit → inline execution (code taken from the plan, every test run, one commit per task).
 
-## Bug del piano corretti in corsa
-- Test manifest: `NF!=3` → `NF<3` (la riga `caveman` contiene `| bash`; l'arg può avere pipe).
-- Test dispatch: `read` senza newline finale ritornava 1 sotto `set -e` → aggiunto `\n`.
+## Plan bugs fixed along the way
+- Manifest test: `NF!=3` → `NF<3` (the `caveman` line contains `| bash`; the arg may hold a pipe).
+- Dispatch test: `read` without a trailing newline returned 1 under `set -e` → added `\n`.
 
-## Gate di sicurezza (pre-pubblicazione) — superato
-Zero path assoluti, zero chiavi, zero symlink, `.env` non tracciato, scaffold con solo
-schema + placeholder vuoti, `~/.claude/settings.json` viva intatta dopo il dry-run.
+## Safety gate (pre-publication) — passed
+Zero absolute paths, zero keys, zero symlinks, `.env` untracked, scaffold with schema only +
+empty placeholders, `~/.claude/settings.json` left intact after the dry run.
 
-## Follow-up aperti
-- [x] ~~⚠️ `install.ps1` / `verify.ps1`: sintassi NON validata~~ — validati il 2026-07-26 su Windows reale: `test_ps_syntax` ripiega su `powershell` 5.1 quando `pwsh` non c'è, e passa. Resta il lag funzionale di `install.ps1` (vedi aggiornamento 26/07 b).
-- [x] ~~Confermare i sottocomandi CLI esatti~~ — verificato con `claude plugin --help` (2026-06-29): `claude plugin marketplace add <source>` e `claude plugin install <plugin>@<marketplace>` sono corretti così come in `lib/run-component.sh`.
-- [x] ~~Caveat Windows hook SessionStart~~ — verificato su Windows 11 nativo (2026-07-26): la variante `.sh` sotto Git Bash **funziona**, il `Conv_*.md` viene creato a ogni avvio. Il fallback WSL resta documentato per installazioni dove i SessionStart nativi non scattano. Caveat reali di Windows raccolti in [`docs/WINDOWS.md`](WINDOWS.md).
-- [x] ~~Nessun git remote~~ — repo pubblica creata e pushata (2026-06-29): https://github.com/sonosaturn/overclaude
-- [x] ~~Layer 2 personale (`overclaude-personal`)~~ — creato (2026-06-29): `~/brain` reale pushato su repo GitHub **privata** `sonosaturn/overclaude-personal`. Round-trip verificato (clone → `install.sh --personal=<clone>` → `WOULD OVERLAY`). La auto-memoria è inclusa: la dir live `~/.claude/projects/<home>/memory/` è un symlink a `~/brain/claude-memory/` (single source of truth, versionata col vault); `install.sh --personal` ricrea il symlink dopo l'overlay (step 6b). Test dry-run copre l'annuncio `WOULD LINK`.
+## Open follow-ups
+- [x] ~~⚠️ `install.ps1` / `verify.ps1`: syntax NOT validated~~ — validated on 2026-07-26 on real Windows: `test_ps_syntax` falls back to `powershell` 5.1 when `pwsh` is absent, and passes. The functional lag of `install.ps1` remains (see update 26/07 b).
+- [x] ~~Confirm the exact CLI subcommands~~ — verified with `claude plugin --help` (2026-06-29): `claude plugin marketplace add <source>` and `claude plugin install <plugin>@<marketplace>` are correct as they stand in `lib/run-component.sh`.
+- [x] ~~Windows SessionStart hook caveat~~ — verified on native Windows 11 (2026-07-26): the `.sh` variant under Git Bash **works**, the `Conv_*.md` is created on every startup. The WSL fallback stays documented for installations where native SessionStart hooks do not fire. Real Windows caveats collected in [`docs/WINDOWS.md`](WINDOWS.md).
+- [x] ~~No git remote~~ — public repo created and pushed (2026-06-29): https://github.com/sonosaturn/overclaude
+- [x] ~~Personal layer 2 (`overclaude-personal`)~~ — created (2026-06-29): the real `~/brain` pushed to the **private** GitHub repo `sonosaturn/overclaude-personal`. Round trip verified (clone → `install.sh --personal=<clone>` → `WOULD OVERLAY`). The auto-memory is included: the live dir `~/.claude/projects/<home>/memory/` is a symlink to `~/brain/claude-memory/` (single source of truth, versioned with the vault); `install.sh --personal` recreates the symlink after the overlay (step 6b). The dry-run test covers the `WOULD LINK` announcement.
 
-## Note operative
-- Key context7 ruotata il 2026-06-29 (la vecchia era stata esposta in chat; rigenerata).
-- `.env` locale popolato (context7 + Gemini), gitignorato.
-- Il ledger SDD vive in `.superpowers/` (gitignorato): non fa parte del repo pubblico.
+## Operational notes
+- context7 key rotated on 2026-06-29 (the old one had been exposed in chat; regenerated).
+- Local `.env` populated (context7 + Gemini), gitignored.
+- The SDD ledger lives in `.superpowers/` (gitignored): it is not part of the public repo.

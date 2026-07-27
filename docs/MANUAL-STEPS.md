@@ -1,150 +1,148 @@
-# Passaggi manuali
+# Manual steps
 
-`install.sh` fa tutto ciò che è automatizzabile. Resta fuori solo ciò che richiede un
-account, una chiave o un'impostazione lato servizio: nessuno script può crearli al posto tuo.
+`install.sh` does everything that can be automated. What is left needs an account, a key, or a
+service-side setting: no script can create those for you.
 
-Questo file è scritto per essere **letto da Claude Code**: se sei l'utente, aprilo e chiedi
-al tuo Claude di seguirlo. Ogni sezione dice cosa ottieni, dove prenderlo, dove scriverlo e
-come verificare che abbia funzionato.
+This file is written to be **read by Claude Code**: if you are the user, open it and ask your
+Claude to follow it. Every section says what you get, where to get it, where to write it, and
+how to verify it worked.
 
 ---
 
-## Exa — ricerca web e fetch (connector claude.ai)
+## Exa — web search and fetch (claude.ai connector)
 
-**Cosa dà:** i tool `mcp__claude_ai_Exa__web_search_exa` e `web_fetch_exa`, cioè ricerca web
-e lettura pagine di qualità migliore del fetch base.
+**What it gives:** the `mcp__claude_ai_Exa__web_search_exa` and `web_fetch_exa` tools, i.e. web
+search and page reading of better quality than the base fetch.
 
-**Perché non lo installa lo script:** Exa non è un MCP locale. È un **connector a livello di
-account claude.ai**, non vive in `~/.claude.json` e `claude mcp add` non lo può creare. Si
-attiva una volta sull'account e segue il tuo login su ogni macchina.
+**Why the script does not install it:** Exa is not a local MCP. It is a **connector at the
+claude.ai account level**, it does not live in `~/.claude.json` and `claude mcp add` cannot
+create it. You enable it once on the account and it follows your login on every machine.
 
-**Passi:**
+**Steps:**
 
-1. Apri claude.ai con l'account che usi in Claude Code e vai in **Settings → Connectors**
-   (di norma <https://claude.ai/settings/connectors>).
-2. Cerca **Exa** nella lista dei connector disponibili e premi **Connect**.
-3. Autorizza quando il browser lo chiede.
-4. Torna al terminale e riavvia Claude Code (il connector si carica all'avvio della sessione).
+1. Open claude.ai with the account you use in Claude Code and go to **Settings → Connectors**
+   (usually <https://claude.ai/settings/connectors>).
+2. Find **Exa** in the list of available connectors and press **Connect**.
+3. Authorise when the browser asks.
+4. Go back to the terminal and restart Claude Code (the connector loads at session start).
 
-**Verifica:**
+**Verify:**
 
 ```sh
 claude mcp list
 ```
 
-Deve comparire una riga `claude.ai Exa: https://mcp.exa.ai/mcp - ✔ Connected`. Il prefisso
-`claude.ai` è normale: indica appunto che arriva dall'account e non dalla config locale.
+A line `claude.ai Exa: https://mcp.exa.ai/mcp - ✔ Connected` must appear. The `claude.ai` prefix
+is normal: it means exactly that it comes from the account and not from the local config.
 
-**Se non compare:** stai usando un account diverso da quello loggato in Claude Code
-(`claude auth status` per controllare quale), oppure il connector non è disponibile sul tuo
-piano.
+**If it does not appear:** you are using a different account from the one logged into Claude Code
+(`claude auth status` to check which), or the connector is not available on your plan.
 
 ---
 
-## Dove vivono i segreti (leggere prima delle sezioni sotto)
+## Where the secrets live (read this before the sections below)
 
-Due posti, e nessuno dei due è `settings.json`:
+Two places, and neither of them is `settings.json`:
 
-| File | Quando viene letto | Cosa ci va |
+| File | When it is read | What goes in it |
 |---|---|---|
-| `.env` di questa repo | **all'installazione**, da `install.sh` | le chiavi che servono a costruire la config (`CONTEXT7_API_KEY`, `MAGIC_API_KEY`, `GEMINI_API_KEY`) |
-| `~/.config/brain.env` | **a runtime**, dalla shell e dagli hook del vault | `GEMINI_API_KEY` e i modelli graphify |
+| this repo's `.env` | **at install time**, by `install.sh` | the keys needed to build the config (`CONTEXT7_API_KEY`, `MAGIC_API_KEY`, `GEMINI_API_KEY`) |
+| `~/.config/brain.env` | **at runtime**, by the shell and the vault hooks | `GEMINI_API_KEY` and the graphify models |
 
-`.env` è nella prima riga del `.gitignore` e c'è un test che fallisce se una chiave finisce
-nei file versionati. `~/.config/brain.env` sta fuori da qualsiasi repo di proposito, ed è
-`install.sh` a crearlo (a `600`) se non esiste.
+`.env` is on the first line of `.gitignore` and there is a test that fails if a key ends up in a
+versioned file. `~/.config/brain.env` sits outside any repo on purpose, and `install.sh` creates
+it (mode `600`) if it does not exist.
 
-**Non mettere chiavi in `~/.claude/settings.json`.** Il campo `env` funziona, ma non
-supporta interpolazione: ci finirebbe il valore in chiaro, e su questa configurazione quel
-file vive dentro l'albero di un repo. Le variabili esportate dalla shell arrivano comunque
-a Claude Code e ai suoi sottoprocessi, quindi `brain.env` copre lo stesso bisogno senza il
-rischio.
+**Do not put keys in `~/.claude/settings.json`.** The `env` field works, but it does not support
+interpolation: the value would land there in the clear, and in this setup that file lives inside
+a repo tree. Variables exported by the shell reach Claude Code and its subprocesses anyway, so
+`brain.env` covers the same need without the risk.
 
-Perché la shell carichi `brain.env`, serve una riga nel tuo rc (`~/.zshrc`, `~/.bashrc`):
+For the shell to load `brain.env`, you need one line in your rc (`~/.zshrc`, `~/.bashrc`):
 
 ```sh
 [ -f "$HOME/.config/brain.env" ] && source "$HOME/.config/brain.env"
 ```
 
-Verifica, **in un terminale nuovo** (le variabili non compaiono in quello già aperto):
+Verify, **in a new terminal** (the variables do not appear in one that is already open):
 
 ```sh
-printenv GEMINI_API_KEY | wc -c    # > 1 se caricata
+printenv GEMINI_API_KEY | wc -c    # > 1 if loaded
 ```
 
 ---
 
-## Gemini — grafo del vault, recall semantico, generazione immagini
+## Gemini — vault graph, semantic recall, image generation
 
-**Cosa sblocca:** `graphify` (il grafo del vault), `brain-recall` (il recall per significato,
-che senza chiave degrada su `rg` + `INDEX.md`), e il plugin `nano-banana`.
+**What it unlocks:** `graphify` (the vault graph), `brain-recall` (recall by meaning, which
+degrades to `rg` + `INDEX.md` without a key), and the `nano-banana` plugin.
 
-**Passi:**
+**Steps:**
 
-1. Vai su <https://aistudio.google.com/apikey> e crea una API key.
-2. Incollala in due posti: `GEMINI_API_KEY=` nel `.env` di questa repo, e
-   `export GEMINI_API_KEY=` in `~/.config/brain.env`. Se `brain.env` non esiste ancora,
-   rilancia `sh install.sh` e lo crea da solo leggendo il `.env`.
-3. Apri un terminale nuovo.
+1. Go to <https://aistudio.google.com/apikey> and create an API key.
+2. Paste it in two places: `GEMINI_API_KEY=` in this repo's `.env`, and
+   `export GEMINI_API_KEY=` in `~/.config/brain.env`. If `brain.env` does not exist yet, re-run
+   `sh install.sh` and it creates it by reading the `.env`.
+3. Open a new terminal.
 
-**Verifica:**
+**Verify:**
 
 ```sh
 curl -s -o /dev/null -w '%{http_code}\n' \
   "https://generativelanguage.googleapis.com/v1beta/models?key=$GEMINI_API_KEY"
 ```
 
-`200` = chiave valida. `400` o `403` = chiave errata o API non abilitata sul progetto.
+`200` = valid key. `400` or `403` = wrong key or API not enabled on the project.
 
-**Nota su nano-banana:** la generazione di immagini richiede il **billing attivo** sul
-progetto Google Cloud a cui appartiene la key. Il free tier è a zero per quei modelli: la
-key risponde `200` sull'elenco modelli e fallisce comunque sulla generazione. Se ti serve,
-attiva la fatturazione dal progetto, non basta creare la key.
+**Note on nano-banana:** image generation requires **active billing** on the Google Cloud project
+the key belongs to. The free tier is zero for those models: the key answers `200` on the model
+list and still fails on generation. If you need it, enable billing on the project — creating the
+key is not enough.
 
 ---
 
-## 21st.dev — MCP `magic` per i componenti UI
+## 21st.dev — the `magic` MCP for UI components
 
-**Cosa sblocca:** i tool `mcp__magic__*`, che generano e raffinano componenti UI.
+**What it unlocks:** the `mcp__magic__*` tools, which generate and refine UI components.
 
-**Passi:**
+**Steps:**
 
-1. Crea un account su <https://21st.dev> e genera una API key dalla console.
-2. Scrivila come `MAGIC_API_KEY=` nel `.env` di questa repo.
-3. Rilancia `sh install.sh`, oppure — se l'MCP è già stato aggiunto senza chiave — sostituiscilo:
+1. Create an account at <https://21st.dev> and generate an API key from the console.
+2. Write it as `MAGIC_API_KEY=` in this repo's `.env`.
+3. Re-run `sh install.sh`, or — if the MCP was already added without a key — replace it:
 
 ```sh
 claude mcp remove magic
-claude mcp add --scope user magic -- npx -y @21st-dev/magic@latest API_KEY=<la-tua-key>
+claude mcp add --scope user magic -- npx -y @21st-dev/magic@latest API_KEY=<your-key>
 ```
 
-**Verifica:** `claude mcp list` deve mostrare `magic … ✔ Connected`.
+**Verify:** `claude mcp list` must show `magic … ✔ Connected`.
 
-**Attenzione:** se installi senza chiave, l'MCP viene comunque aggiunto con il placeholder
-`API_KEY=SET_IN_ENV`. Compare nell'elenco ma non funziona: è il sintomo di questo passaggio
-saltato, non un guasto.
+**Careful:** if you install without a key, the MCP is still added with the `API_KEY=SET_IN_ENV`
+placeholder. It shows up in the list but does not work: that is the symptom of this step being
+skipped, not a failure.
 
 ---
 
-## Groq — trascrizione per la skill `watch`
+## Groq — transcription for the `watch` skill
 
-**Cosa sblocca:** la trascrizione Whisper dei video **senza sottotitoli**. Con i sottotitoli
-nativi (quasi tutto YouTube) `watch` funziona già senza chiave; senza, torna solo i frame.
+**What it unlocks:** Whisper transcription of videos **without subtitles**. With native subtitles
+(almost all of YouTube) `watch` already works without a key; without them it returns only frames.
 
-**Passi:**
+**Steps:**
 
-1. Crea una key su <https://console.groq.com/keys> (il free tier basta: circa due ore di
-   trascrizione l'ora).
-2. Scrivila in `~/.config/watch/.env`:
+1. Create a key at <https://console.groq.com/keys> (the free tier is enough: roughly two hours of
+   transcription per hour).
+2. Write it into `~/.config/watch/.env`:
 
 ```sh
 mkdir -p ~/.config/watch
-printf 'GROQ_API_KEY=%s\n' '<la-tua-key>' >> ~/.config/watch/.env
+printf 'GROQ_API_KEY=%s\n' '<your-key>' >> ~/.config/watch/.env
 chmod 600 ~/.config/watch/.env
 ```
 
-In alternativa `OPENAI_API_KEY` nello stesso file: la skill preferisce Groq quando ci sono
-entrambe, ed è più economica e veloce.
+Alternatively `OPENAI_API_KEY` in the same file: the skill prefers Groq when both are present,
+and it is cheaper and faster.
 
-**Verifica:** lancia `/watch` su un video senza sottotitoli. Nell'intestazione del report la
-riga della sorgente deve dire `whisper (groq)` invece di `none available`.
+**Verify:** run `/watch` on a video without subtitles. In the report header the source line must
+say `whisper (groq)` instead of `none available`.

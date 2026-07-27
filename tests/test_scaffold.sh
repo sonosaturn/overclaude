@@ -8,18 +8,18 @@ for d in sources wiki conversations bin claude-memory .obsidian; do
   [ -d "$s/$d" ] || fail "missing dir $d"
 done
 
-# Il recall poggia su INDEX.md: senza, il CLAUDE.md globale punta a un file inesistente.
+# Recall leans on INDEX.md: without it the global CLAUDE.md points at a file that does not exist.
 [ -f "$s/conversations/INDEX.md" ] || fail "no conversations/INDEX.md"
-# claude-memory deve esistere o install.sh non crea mai il symlink della auto-memory.
+# claude-memory must exist or install.sh never creates the auto-memory symlink.
 [ -f "$s/claude-memory/MEMORY.md" ] || fail "no claude-memory/MEMORY.md"
-# Vault Obsidian usabile senza setup manuale.
+# Obsidian vault usable with no manual setup.
 for f in app.json appearance.json core-plugins.json graph.json; do
   [ -f "$s/.obsidian/$f" ] || fail "missing .obsidian/$f"
 done
-# workspace.json è stato per-macchina: non deve essere versionato.
+# workspace.json is per-machine state: it must not be versioned.
 [ -f "$s/.obsidian/workspace.json" ] && fail "workspace.json versionato"
 
-# Niente contenuto privato: né conversazioni reali, né memorie reali.
+# No private content: no real conversations, no real memories.
 ! ls "$s/conversations/"Conv_*.md >/dev/null 2>&1 || fail "scaffold leaks conversations"
 [ "$(ls "$s/claude-memory" | wc -l)" -eq 1 ] || fail "scaffold leaks memories"
 ! grep -rIn '/home/xsaturn' "$s" || fail "absolute path in scaffold"

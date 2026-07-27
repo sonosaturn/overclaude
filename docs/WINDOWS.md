@@ -1,133 +1,129 @@
-# Windows — come trattare la config
+# Windows — how to treat this config
 
-Tutto quello che su Windows nativo (Git Bash + Claude Code, **senza WSL**) si comporta
-diversamente. Ogni voce è stata riprodotta e corretta su una macchina reale
-(Windows 11, luglio 2026), non è prudenza teorica.
+Everything that behaves differently on native Windows (Git Bash + Claude Code, **no WSL**).
+Every entry was reproduced and fixed on a real machine (Windows 11, July 2026); none of it is
+theoretical caution.
 
-Filo comune: gli script della repo girano sotto **Git Bash**, ma gli interpreti che
-lanciano (`python`, `node`) sono **binari Windows nativi**. Le due metà non condividono
-né i path né la codepage — è da lì che nasce quasi ogni problema qui sotto.
+The common thread: the repo's scripts run under **Git Bash**, but the interpreters they launch
+(`python`, `node`) are **native Windows binaries**. The two halves share neither paths nor
+codepage — that is where almost every problem below comes from.
 
-## 1. `python3` non esiste — e non fallisce, il che è peggio
+## 1. `python3` does not exist — and it does not fail, which is worse
 
-Windows piazza in `%LOCALAPPDATA%\Microsoft\WindowsApps` degli **alias del Microsoft
-Store**: `python3.exe` c'è, sta nel `PATH`, `command -v python3` lo trova. Eseguito,
-stampa "Python non è stato trovato…" ed esce **49**.
+Windows drops **Microsoft Store aliases** into `%LOCALAPPDATA%\Microsoft\WindowsApps`:
+`python3.exe` is there, it is in `PATH`, `command -v python3` finds it. Run it and it prints
+"Python was not found…" and exits **49**.
 
-Conseguenza: uno script che si limita a invocare `python3` non esplode, non logga —
-semplicemente non fa niente. È così che l'hook `Stop` del logging conversazioni è
-rimasto inerte per settimane senza un solo messaggio d'errore.
+Consequence: a script that just calls `python3` does not blow up, does not log — it simply does
+nothing. That is how the `Stop` hook for conversation logging stayed inert for weeks without a
+single error message.
 
-**Regola:** mai `python3` cablato. Sondare l'interprete e usare il primo che parte
-davvero (`hooks/hooks.json` fa esattamente questo):
+**Rule:** never hardcode `python3`. Probe the interpreter and use the first one that actually
+starts (`hooks/hooks.json` does exactly this):
 
 ```sh
 for p in python3 python py; do "$p" -c "" >/dev/null 2>&1 && exec "$p" "$1"; done
 ```
 
-Il probe `-c ""` distingue l'interprete vero dall'alias: lo stub esce ≠ 0.
-Vale anche dentro gli script (`uv run … python3 -c` ha lo stesso difetto: usare `python`,
-che uv risolve correttamente su entrambe le piattaforme).
+The `-c ""` probe tells the real interpreter from the alias: the stub exits ≠ 0.
+This also applies inside scripts (`uv run … python3 -c` has the same flaw: use `python`, which
+uv resolves correctly on both platforms).
 
-## 2. I path di Git Bash non sono i path di Python
+## 2. Git Bash paths are not Python paths
 
-`mktemp -d` restituisce `/tmp/tmp.XYZ`, che in Git Bash è
-`C:\Users\<tu>\AppData\Local\Temp\tmp.XYZ`. Passato a un python nativo, quello stesso
-`/tmp/tmp.XYZ` diventa `C:\tmp\tmp.XYZ`: una cartella diversa, che python crea al volo
-senza lamentarsi. Risultato tipico: uno script scrive in una directory e un altro legge
-in un'altra, entrambi "con successo".
+`mktemp -d` returns `/tmp/tmp.XYZ`, which in Git Bash is
+`C:\Users\<you>\AppData\Local\Temp\tmp.XYZ`. Handed to a native python, that same `/tmp/tmp.XYZ`
+becomes `C:\tmp\tmp.XYZ`: a different folder, which python creates on the fly without
+complaining. Typical result: one script writes into one directory and another reads from
+another, both "successfully".
 
-**Regola:** ogni path che attraversa il confine shell → interprete nativo va convertito.
+**Rule:** every path that crosses the shell → native interpreter boundary must be converted.
 
 ```sh
 VAULT="$(mktemp -d)"
 command -v cygpath >/dev/null 2>&1 && VAULT="$(cygpath -m "$VAULT")"
 ```
 
-`cygpath -m` dà la forma `C:/…` (slash normali), digeribile sia da python che dalla shell.
-Nell'altro verso, per passare un path a un `.exe` che vuole i backslash: `cygpath -w`.
+`cygpath -m` gives the `C:/…` form (forward slashes), digestible by both python and the shell.
+The other way round, to hand a path to an `.exe` that wants backslashes: `cygpath -w`.
 
-## 3. Console in cp1252: l'output UTF-8 fa crashare gli script
+## 3. cp1252 console: UTF-8 output crashes the scripts
 
-Lo stdout di un processo python nella console Windows usa la codepage ANSI (cp1252 in
-locale italiano). Stampare un carattere fuori tabella — `—`, `↔`, `…`, tutte cose che
-abbondano in un vault markdown — solleva `UnicodeEncodeError` e **uccide lo script a metà
-lavoro**.
+A python process's stdout in the Windows console uses the ANSI codepage (cp1252 in an Italian
+locale). Printing a character outside that table — `—`, `↔`, `…`, all things a markdown vault is
+full of — raises `UnicodeEncodeError` and **kills the script mid-job**.
 
-**Regola:** in testa a ogni CLI che stampa contenuto non ASCII:
+**Rule:** at the top of every CLI that prints non-ASCII content:
 
 ```python
 for _s in (sys.stdout, sys.stderr):
     _s.reconfigure(encoding="utf-8", errors="replace")
 ```
 
-Stesso discorso in lettura: `open()` senza `encoding=` usa la codepage, non UTF-8. I file
-del vault e i transcript `.jsonl` vanno sempre aperti con `encoding="utf-8"` e, se il file
-può essere stato toccato a mano, `errors="replace"` — un byte sporco non deve buttare giù
-un hook.
+Same story when reading: `open()` without `encoding=` uses the codepage, not UTF-8. The vault
+files and the `.jsonl` transcripts must always be opened with `encoding="utf-8"` and, if the
+file may have been touched by hand, `errors="replace"` — one dirty byte must not take a hook down.
 
-## 4. Hook e plugin: l'aggiornamento passa dalla versione
+## 4. Hooks and plugins: updates go through the version
 
-Il plugin `overclaude` è servito da una marketplace di tipo `directory` che punta al clone
-locale della repo. Claude Code però non legge i file dal vivo: al momento dell'install ne
-fa una **copia** in `~/.claude/plugins/cache/overclaude/overclaude/<versione>/`. Modificare
-i file nella repo non cambia nulla per le sessioni in corso né per quelle future.
+The `overclaude` plugin is served by a `directory` marketplace pointing at the local clone of
+the repo. Claude Code does not read the files live, though: at install time it makes a **copy**
+in `~/.claude/plugins/cache/overclaude/overclaude/<version>/`. Editing the files in the repo
+changes nothing for running sessions, nor for future ones.
 
-Per pubblicare una modifica agli hook:
+To publish a change to the hooks:
 
-1. bump di `version` in `plugins/overclaude/.claude-plugin/plugin.json` (senza, l'update è
-   un no-op: stessa versione, stessa cache);
+1. bump `version` in `plugins/overclaude/.claude-plugin/plugin.json` (without it the update is a
+   no-op: same version, same cache);
 2. `claude plugin marketplace update overclaude`
 3. `claude plugin update overclaude@overclaude`
-4. **riavviare** la sessione: gli hook si caricano all'avvio.
+4. **restart** the session: hooks are loaded at startup.
 
-Verifica che la cache contenga davvero i file nuovi:
+Check that the cache really holds the new files:
 
 ```sh
-ls ~/.claude/plugins/cache/overclaude/overclaude/<versione>/hooks/
+ls ~/.claude/plugins/cache/overclaude/overclaude/<version>/hooks/
 ```
 
-Un hook che manca dalla cache non dà errore: semplicemente non esiste. Se un
-comportamento automatico "non parte", il primo controllo è questo, non il codice.
+A hook missing from the cache raises no error: it simply does not exist. If some automatic
+behaviour "does not fire", this is the first thing to check, not the code.
 
-## 5. Statusline dei plugin di modalità
+## 5. Statusline of the mode plugins
 
-I badge `[PONYTAIL]`/`[CAVEMAN]` arrivano dagli script `*-statusline.ps1` dentro la cache
-del plugin, il cui path contiene la versione. `config/statusline.ps1` li aggrega risolvendo
-il path con un glob, così un bump del plugin non rompe la statusline. L'installer lo copia
-in `~/.claude/statusline.ps1` e scrive il comando in `settings.json` — il path assoluto
-nasce lì, non nella repo. `detect_os` riconosce Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) e
-sceglie la variante `.ps1`; altrove copia `statusline.sh`. Risultato in `settings.json`:
+The `[PONYTAIL]`/`[CAVEMAN]` badges come from the `*-statusline.ps1` scripts inside the plugin
+cache, whose path contains the version. `config/statusline.ps1` aggregates them by resolving the
+path with a glob, so a plugin version bump does not break the statusline. The installer copies it
+to `~/.claude/statusline.ps1` and writes the command into `settings.json` — the absolute path is
+born there, not in the repo. `detect_os` recognises Git Bash (`MINGW*`/`MSYS*`/`CYGWIN*`) and
+picks the `.ps1` variant; elsewhere it copies `statusline.sh`. Result in `settings.json`:
 
 ```json
 "statusLine": {
   "type": "command",
-  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\<tu>\\.claude\\statusline.ps1\""
+  "command": "powershell -NoProfile -ExecutionPolicy Bypass -File \"C:\\Users\\<you>\\.claude\\statusline.ps1\""
 }
 ```
 
 ## 6. GitNexus
 
-- L'estensione full-text (BM25) di LadybugDB non è nel pacchetto: la prima analisi avvisa
-  che l'FTS è disabilitato. Si installa una volta, con rete:
+- LadybugDB's full-text (BM25) extension is not in the package: the first analysis warns that FTS
+  is disabled. Install it once, with network access:
   `GITNEXUS_LBUG_EXTENSION_INSTALL=auto gitnexus analyze --repair-fts`.
-- L'indice `VECTOR` **non è disponibile su questa piattaforma**: la ricerca semantica
-  ripiega su exact-scan (limite 10k chunk). Non è un errore da inseguire, `gitnexus doctor`
-  lo riporta come tale.
-- La cartella `.gitnexus/` (~5 MB) non va versionata.
+- The `VECTOR` index **is not available on this platform**: semantic search falls back to an
+  exact scan (10k chunk limit). Not an error worth chasing, `gitnexus doctor` reports it as such.
+- The `.gitnexus/` folder (~5 MB) should not be versioned.
 
-## 7. Hook SessionStart
+## 7. SessionStart hook
 
-`new-session` esiste in due varianti (`.sh` e `.ps1`). Su questa macchina la variante
-`.sh` sotto Git Bash **funziona** (il file `Conv_*.md` viene creato a ogni avvio); il
-fallback WSL resta valido se nella tua installazione i SessionStart hook nativi non
-scattano.
+`new-session` exists in two variants (`.sh` and `.ps1`). On this machine the `.sh` variant under
+Git Bash **works** (the `Conv_*.md` file is created on every startup); the WSL fallback stays
+valid if native SessionStart hooks do not fire in your installation.
 
-## In sintesi
+## Summary
 
-| Sintomo | Causa |
+| Symptom | Cause |
 |---|---|
-| Un hook "non fa niente", nessun errore | `python3` → alias Store (§1) o file non presente nella cache del plugin (§4) |
-| Due script lavorano su dati diversi | path MSYS non convertito (§2) |
-| `UnicodeEncodeError` / `UnicodeDecodeError` | codepage cp1252 in lettura o scrittura (§3) |
-| Modifica agli hook senza effetto | versione del plugin non bumpata, o sessione non riavviata (§4) |
+| A hook "does nothing", no error | `python3` → Store alias (§1) or file missing from the plugin cache (§4) |
+| Two scripts work on different data | unconverted MSYS path (§2) |
+| `UnicodeEncodeError` / `UnicodeDecodeError` | cp1252 codepage on read or write (§3) |
+| Hook change has no effect | plugin version not bumped, or session not restarted (§4) |

@@ -1,8 +1,8 @@
 #!/usr/bin/env sh
 set -eu
 root="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-# pwsh (Core) ovunque; su Windows va bene anche il powershell.exe di sistema (5.1),
-# altrimenti su questa piattaforma i .ps1 non verrebbero mai validati.
+# pwsh (Core) everywhere; on Windows the system powershell.exe (5.1) is fine too,
+# otherwise the .ps1 files would never be validated on that platform.
 PS=""
 for c in pwsh powershell; do command -v "$c" >/dev/null 2>&1 && { PS="$c"; break; }; done
 [ -n "$PS" ] || { echo "SKIP (no pwsh/powershell)"; exit 0; }
