@@ -72,128 +72,128 @@ Shell commands run through the rtk PreToolUse hook automatically (git status -> 
 - When tests fail, use `rtk err <command>` to filter output to errors only.
 - Run `rtk gain` after a session with several shell commands to see token savings.
 
-# Istruzioni globali
+# Global instructions
 
-> Template OverClaude. Personalizza pure: queste regole abilitano il second-brain
-> `~/brain` e l'uso di Context7. Adattale o rimuovile se non usi il vault.
+> OverClaude template. Feel free to personalise: these rules enable the `~/brain` second brain
+> and the use of Context7. Adapt or remove them if you do not use the vault.
 
-**Qui vanno solo le regole valide ovunque.** Ciò che riguarda un singolo repo va nel
-`CLAUDE.md` di quel repo: Claude Code carica i file nelle sottocartelle **on demand**,
-quando legge file lì dentro, mentre questo lo paghi a ogni sessione di ogni progetto.
-Tieni questo file sotto le ~200 righe; oltre, l'aderenza cala.
+**Only rules that apply everywhere belong here.** Anything specific to a single repo belongs in
+that repo's `CLAUDE.md`: Claude Code loads files in subfolders **on demand**, when it reads files
+in there, while you pay for this one on every session of every project. Keep this file under
+~200 lines; past that, adherence drops.
 
-## Recall automatico delle conversazioni passate (vault ~/brain)
+## Automatic recall of past conversations (the ~/brain vault)
 
-Esiste un second-brain personale in `~/brain` con il log curato di tutte le sessioni
-in `~/brain/conversations/` (una "fotografia" markdown per sessione) e una wiki in
-`~/brain/wiki/`.
+There is a personal second brain in `~/brain` with a curated log of every session in
+`~/brain/conversations/` (one markdown "snapshot" per session) and a wiki in `~/brain/wiki/`.
 
-**Quando l'utente fa riferimento a sessioni passate, lavoro precedente, decisioni già
-prese o a un progetto per nome** (es. "come avevamo deciso…", "nella scorsa sessione",
-"il progetto X", "riprendi da dove eravamo"), **prima di rispondere**:
+**When the user refers to past sessions, earlier work, decisions already made, or to a project by
+name** (e.g. "as we decided…", "last session", "project X", "pick up where we left off"),
+**before answering**:
 
-1. Leggi `~/brain/conversations/INDEX.md` (TOC piccolo: una riga per sessione con data,
-   temi, progetti). È economico, leggilo sempre per primo.
-2. Individua le sessioni rilevanti e apri **solo** quei `Conv_*.md`; se serve,
-   `rg -i "<termine>" ~/brain/conversations ~/brain/wiki`.
-2b. **Recall semantico** (per parafrasi/sinonimi che `rg` non prende): lancia
-    `~/brain/bin/brain-recall "<query>" [--conv|--kb]`. Ritorna i chunk più vicini
-    per significato con score. Fail-open: se manca la key o l'indice, degrada su rg+INDEX.
-    Query embeddata solo qui (mai per-prompt) → nessuno spreco.
-3. Rispondi usando ciò che trovi e **cita** la sessione/pagina (es. "(sess. 25/06)").
+1. Read `~/brain/conversations/INDEX.md` (a small TOC: one line per session with date, themes,
+   projects). It is cheap, always read it first.
+2. Identify the relevant sessions and open **only** those `Conv_*.md`; if needed,
+   `rg -i "<term>" ~/brain/conversations ~/brain/wiki`.
+2b. **Semantic recall** (for paraphrases/synonyms `rg` misses): run
+    `~/brain/bin/brain-recall "<query>" [--conv|--kb]`. It returns the chunks closest in meaning,
+    with scores. Fail-open: without the key or the index it degrades to rg+INDEX.
+    The query is embedded only here (never per prompt), so nothing is wasted.
+3. Answer using what you find and **cite** the session/page (e.g. "(sess. 25/06)").
 
-Cerca solo quando la domanda tocca davvero lavoro passato — non ad ogni prompt. Per
-domande di conoscenza generale sul vault (non sulle conversazioni) usa la skill `overclaude:brain`.
+Search only when the question really touches past work — not on every prompt. For general
+knowledge questions about the vault (not about the conversations) use the `overclaude:brain` skill.
 
-## Commit automatico del vault ~/brain
+## Automatic commits in the ~/brain vault
 
-`~/brain` è un repo git. **Committa automaticamente, senza chiedere conferma**, ad ogni
-unità di lavoro conclusa nel vault: milestone, nuova feature, miglioramento o bugfix
-(es. ingest completato, set di pagine wiki, fix di una skill/script, lint applicato).
-Non a ogni turno e non a lavoro a metà — una milestone = un commit.
+`~/brain` is a git repo. **Commit automatically, without asking for confirmation**, at every unit
+of work finished in the vault: a milestone, a new feature, an improvement or a bugfix (e.g. an
+ingest completed, a set of wiki pages, a skill/script fix, a lint pass applied).
+Not every turn and never mid-work — one milestone = one commit.
 
 ```
-cd ~/brain && git add -A && git commit -m "<tipo>: <descrizione chiara>"
+cd ~/brain && git add -A && git commit -m "<type>: <clear description>"
 ```
 
-`<tipo>` = feat | fix | docs | refactor | chore. Solo il vault: `git add -A` dentro
-`~/brain`, mai `git -C` su altri repo. Niente push automatico (resta manuale).
+`<type>` = feat | fix | docs | refactor | chore. The vault only: `git add -A` inside `~/brain`,
+never `git -C` into other repos. No automatic push (that stays manual).
 
-Stessa regola per gli altri tuoi repo personali, ma **scrivila nel `CLAUDE.md` di ciascuno**
-insieme al path esatto e alle sue convenzioni (trailer AI sì/no, branch, build da verificare
-prima del commit): sono dettagli che servono solo quando lavori lì.
+Same rule for your other personal repos, but **write it in each one's `CLAUDE.md`** together with
+the exact path and its conventions (AI trailer yes/no, branch, build to verify before committing):
+those are details you only need while working there.
 
-## Skill / MCP / plugin: attivi e auto-invocabili di DEFAULT
+## Skills / MCPs / plugins: active and model-invocable by DEFAULT
 
-All'installazione di una **skill**, un **MCP** o un **plugin**, configuralo perché sia
-**usabile automaticamente dal modello**, senza trigger manuale — è il default voluto (context7,
-ponytail, superpowers, impeccable, gitnexus, playwright, …). **Unica eccezione:** ciò che è
-**user-only per design**, riconoscibile dal frontmatter `disable-model-invocation: true`
-(es. `handoff`, `grill-me`) → si lancia a mano con `/<nome>`, non forzarlo auto.
+When installing a **skill**, an **MCP** or a **plugin**, configure it so it is **usable
+automatically by the model**, with no manual trigger — that is the intended default (context7,
+ponytail, superpowers, impeccable, gitnexus, playwright, …). **The only exception:** what is
+**user-only by design**, recognisable by the `disable-model-invocation: true` frontmatter
+(e.g. `handoff`, `grill-me`) → run it by hand with `/<name>`, do not force it automatic.
 
-- **Plugin** → abilitato in `settings.json`: `enabledPlugins: { "id@marketplace": true }`.
-- **MCP** → aggiunto e `Connected` (`claude mcp add`), verificabile con `claude mcp list`.
-- **Skill** → model-invocabile: **non** aggiungere `skillOverrides` che la nascondano
-  (`off`/`user-invocable-only`/`name-only`) né impostare tu `disable-model-invocation`; rispetta
-  invece quel flag se ce l'ha messo l'autore.
-- **Verifica post-install:** skill nell'elenco del modello · MCP `Connected` · plugin `true`.
+- **Plugin** → enabled in `settings.json`: `enabledPlugins: { "id@marketplace": true }`.
+- **MCP** → added and `Connected` (`claude mcp add`), checkable with `claude mcp list`.
+- **Skill** → model-invocable: do **not** add `skillOverrides` that hide it
+  (`off`/`user-invocable-only`/`name-only`) and do not set `disable-model-invocation` yourself;
+  do respect that flag when the author set it.
+- **Post-install check:** the skill appears in the model's list · the MCP is `Connected` · the
+  plugin is `true`.
 
-L'installer di OverClaude segue già questa logica (plugin `enabledPlugins: true`, MCP connessi,
-skill non filtrate).
+The OverClaude installer already follows this logic (plugins `enabledPlugins: true`, MCPs
+connected, skills unfiltered).
 
 ## Context7
 
-Vedi `~/.claude/rules/context7.md`: usa il MCP Context7 per documentazione aggiornata di
-librerie, framework, SDK, API e CLI quando l'utente fa domande a riguardo.
+See `~/.claude/rules/context7.md`: use the Context7 MCP for up-to-date documentation of libraries,
+frameworks, SDKs, APIs and CLIs whenever the user asks about them.
 
 ## Prior art
 
-Vedi `~/.claude/rules/prior-art.md`: prima di costruire da zero una capacità non banale,
-verifica se esiste già una libreria, un repo, un CLI, un MCP o una skill che la copre.
+See `~/.claude/rules/prior-art.md`: before building a non-trivial capability from scratch, check
+whether a library, repo, CLI, MCP or skill already covers it.
 
-## GitNexus — code intelligence automatica (ogni repo indicizzato)
+## GitNexus — automatic code intelligence (every indexed repo)
 
-GitNexus mantiene un **grafo di conoscenza** del codice (simboli, relazioni, flussi di
-esecuzione) interrogabile via tool MCP `mcp__gitnexus__*`. **Si applica a QUALSIASI repo
-indicizzato** — riconoscibile dalla cartella `.gitnexus/` nella root e/o dalla presenza dei
-tool `mcp__gitnexus__*`. Se il repo non è indicizzato, questa sezione non vale (e prima di
-usare i tool va fatto `npx gitnexus analyze`).
+GitNexus maintains a **knowledge graph** of the code (symbols, relationships, execution flows)
+queryable through the `mcp__gitnexus__*` MCP tools. **It applies to ANY indexed repo** —
+recognisable by the `.gitnexus/` folder in the root and/or by the presence of the
+`mcp__gitnexus__*` tools. If the repo is not indexed this section does not apply (and before using
+the tools you need `npx gitnexus analyze`).
 
-**Già automatico via hook** (`~/.claude/hooks/gitnexus/gitnexus-hook.cjs`, installato in
-`settings.json` da `gitnexus setup`): `PreToolUse` su Grep/Glob/Bash **arricchisce** col
-contesto del grafo; `PostToolUse` su Bash **controlla la freschezza** dell'indice (avvisa dopo
-`git commit`/`merge`). L'hook **non** rilancia analyze da solo → **quando avvisa che l'indice è
-stale, rilancia tu** `node .gitnexus/run.cjs analyze` dalla root del repo (fallback
-`npx gitnexus analyze`). Dopo un reindex i conteggi simboli/edge cambiano: è normale.
+**Already automatic via hook** (`~/.claude/hooks/gitnexus/gitnexus-hook.cjs`, installed into
+`settings.json` by `gitnexus setup`): `PreToolUse` on Grep/Glob/Bash **enriches** with graph
+context; `PostToolUse` on Bash **checks index freshness** (warns after `git commit`/`merge`). The
+hook does **not** re-run analyze on its own → **when it warns that the index is stale, run it
+yourself**: `node .gitnexus/run.cjs analyze` from the repo root (fallback `npx gitnexus analyze`).
+After a reindex the symbol/edge counts change: that is normal.
 
-**Auto-reindex a ogni commit (repo nuovi):** l'installer registra un git `post-commit`
-(`~/.local/bin/gitnexus-autoreindex.sh`) via `init.templateDir`, quindi **ogni repo creato dopo
-l'install** (`git init`/`clone`) si autoimpianta GitNexus e si reindexa da solo — in background,
-detached, senza bloccare git — a ogni commit, **inclusi i commit automatici** fatti seguendo le
-regole di questo CLAUDE.md. Primo commit = analyze completo, poi incrementale. Repo preesistenti
-non sono coperti: reindexali a mano una volta con `gitnexus analyze <path>`.
+**Auto-reindex on every commit (new repos):** the installer registers a git `post-commit`
+(`~/.local/bin/gitnexus-autoreindex.sh`) via `init.templateDir`, so **every repo created after the
+install** (`git init`/`clone`) self-implants GitNexus and reindexes itself — in the background,
+detached, without blocking git — on every commit, **including the automatic commits** made
+following the rules in this CLAUDE.md. First commit = full analyze, then incremental. Pre-existing
+repos are not covered: reindex them by hand once with `gitnexus analyze <path>`.
 
-**Riflesso di base:** per capire/navigare/modificare codice, **preferisci il grafo a
-grep/read**. Il grep trova stringhe; GitNexus capisce chiamanti, dipendenze e flussi.
+**Basic reflex:** to understand/navigate/modify code, **prefer the graph over grep/read**. Grep
+finds strings; GitNexus understands callers, dependencies and flows.
 
-| Quando… | Usa |
-|---------|-----|
-| "Come funziona X?" / esplori codice ignoto | `query({search_query:"concetto"})` (flussi raggruppati, ranked) invece di grep |
-| Serve tutto il contesto di un simbolo (chiamanti, callee, flussi) | `context({name:"simbolo"})` |
-| **Prima di modificare** una funzione/classe/metodo | `impact({target:"simbolo", direction:"upstream"})` → riporta blast radius e rischio |
-| **Prima di committare** | `detect_changes()` (o `{scope:"compare", base_ref:"<branch-default>"}`) per verificare lo scope toccato |
-| Rinominare un simbolo | `rename(...)` (capisce il call-graph) — **mai** find-and-replace |
-| Tracciare un bug / "perché X fallisce?" | `trace(...)` |
-| Security review (source→sink, taint) | `explain({target:"file/simbolo"})` (richiede indice con `analyze --pdg`) |
-| Controllo/dato-dipendenze dentro una funzione | `pdg_query(...)` |
-| Query libera sul grafo | `cypher(...)` · Mappa rotte HTTP | `route_map(...)` · Repo indicizzati | `list_repos()` |
+| When… | Use |
+|-------|-----|
+| "How does X work?" / exploring unknown code | `query({search_query:"concept"})` (grouped, ranked flows) instead of grep |
+| You need a symbol's full context (callers, callees, flows) | `context({name:"symbol"})` |
+| **Before modifying** a function/class/method | `impact({target:"symbol", direction:"upstream"})` → report blast radius and risk |
+| **Before committing** | `detect_changes()` (or `{scope:"compare", base_ref:"<default-branch>"}`) to check the scope touched |
+| Renaming a symbol | `rename(...)` (it understands the call graph) — **never** find-and-replace |
+| Tracing a bug / "why does X fail?" | `trace(...)` |
+| Security review (source→sink, taint) | `explain({target:"file/symbol"})` (needs an index built with `analyze --pdg`) |
+| Control/data dependencies inside a function | `pdg_query(...)` |
+| Free-form graph query | `cypher(...)` · HTTP route map | `route_map(...)` · Indexed repos | `list_repos()` |
 
-**Regole MUST / NEVER e risorse MCP** stanno già nel `CLAUDE.md` di ogni repo indicizzato:
-`gitnexus analyze` ci scrive un blocco fra i marker `<!-- gitnexus:start/end -->` con le regole
-complete e le risorse `gitnexus://repo/<nome>/*` col nome giusto. Non duplicarle qui: si
-caricano da sole quando lavori in quel repo. In sintesi: `impact` prima di editare (avvisa se
-HIGH/CRITICAL), `detect_changes()` prima di committare, `rename` mai find-and-replace.
+**The MUST / NEVER rules and the MCP resources** already live in each indexed repo's `CLAUDE.md`:
+`gitnexus analyze` writes a block there between the `<!-- gitnexus:start/end -->` markers with the
+full rules and the `gitnexus://repo/<name>/*` resources under the right name. Do not duplicate them
+here: they load by themselves when you work in that repo. In short: `impact` before editing (it
+warns on HIGH/CRITICAL), `detect_changes()` before committing, `rename` never find-and-replace.
 
-**Per il resto** (elenco completo dei tool, schema del grafo, workflow) usa le skill
+**For everything else** (the full tool list, the graph schema, workflows) use the
 `gitnexus-guide`, `gitnexus-exploring`, `gitnexus-debugging`, `gitnexus-impact-analysis`,
-`gitnexus-refactoring`, `gitnexus-pr-review`, `gitnexus-cli`.
+`gitnexus-refactoring`, `gitnexus-pr-review`, `gitnexus-cli` skills.
