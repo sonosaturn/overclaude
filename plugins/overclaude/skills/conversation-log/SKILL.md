@@ -20,8 +20,9 @@ with the session start time, and write the path into the marker file.
 
 ## When to update
 On **every turn** (after answering), **overwrite** the active file with the log updated from
-the start of the session to now. Same file for the whole session; a **new file** is only born
-with a new session (the hook does that).
+the start of the session to now, **and update this session's line in `INDEX.md`** (see
+§ Recall index). Same file for the whole session; a **new file** is only born with a new
+session (the hook does that).
 
 ## The `<!-- curated -->` marker (IMPORTANT)
 When you write the log following this skill, **always** include the line `<!-- curated -->`
@@ -105,8 +106,8 @@ files. Only `[[wikilink]]` creates an edge; markdown links `[text](file.md)` do 
 
 ## Recall index (`INDEX.md`)
 `~/brain/conversations/INDEX.md` is the curated TOC used for automatic recall (see the rule in
-`~/.claude/CLAUDE.md`). **At the end of a session** (or once the themes are clear) add or
-update the current session's line:
+`~/.claude/CLAUDE.md`). Add or update the current session's line **on every turn**, right
+after rewriting the `Conv_*.md`:
 
 ```
 - [Conv_DD-MM-YY_HH-MM](Conv_DD-MM-YY_HH-MM.md) — DD/MM HH:MM · <short themes, semicolon-separated> · *progetti:* [[project-1]] [[project-2]]
@@ -115,7 +116,13 @@ update the current session's line:
 One line per session, chronological order. It is the "search surface": it must be enough to
 decide which `Conv_*.md` to open without reading them all. No code blocks.
 
+Rewrite the line each turn as the session grows: early on it says what the session opened
+with, by the end it says what it did. **Do not defer it to the end of the session** — a
+session ends when the user closes the terminal, so there is no final turn to run it in, and
+the `Stop` hook's parachute covers only the `Conv_*.md`, never this file. Deferring means it
+never happens.
+
 ## Notes
 - The vault is committed automatically per milestone (see `~/.claude/CLAUDE.md`): the
-  end-of-session `INDEX.md` update belongs to the current milestone's commit.
+  `INDEX.md` line rides along with the current milestone's commit, like the log itself.
 - The `.current-session` marker must not be versioned (see the vault's .gitignore).
